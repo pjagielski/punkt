@@ -4,5 +4,8 @@ out
 work
 .idea
 .gradle
+<<<<<<< HEAD
 src/test/kotlin/live*.kts
 src/test/resources/config.yaml
+=======
+>>>>>>> Initial working with Synth and Sample

@@ -2,9 +2,12 @@ val kotlinVersion: String by project
 
 plugins {
     java
+<<<<<<< HEAD
     maven
     `maven-publish`
     id("com.jfrog.bintray") version "1.8.0"
+=======
+>>>>>>> Initial working with Synth and Sample
     kotlin("jvm") version("1.3.70")
 }
 
@@ -12,11 +15,15 @@ group = "pl.pjagielski"
 version = "1.0.0-SNAPSHOT"
 
 repositories {
+<<<<<<< HEAD
     mavenLocal()
+=======
+>>>>>>> Initial working with Synth and Sample
     mavenCentral()
 }
 
 dependencies {
+<<<<<<< HEAD
     compile("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.3.3")
     api("org.jetbrains.kotlin", "kotlin-scripting-common", kotlinVersion)
@@ -30,11 +37,24 @@ dependencies {
     implementation("com.illposed.osc", "javaosc-core", "0.6") {
         exclude("org.slf4j", "slf4j-log4j12")
     }
+=======
+    implementation("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.3.3")
+    implementation("org.jetbrains.kotlin", "kotlin-scripting-common", kotlinVersion)
+    implementation("org.jetbrains.kotlin", "kotlin-scripting-compiler-embeddable", kotlinVersion)
+    implementation("org.jetbrains.kotlin", "kotlin-scripting-jvm", kotlinVersion)
+    implementation("org.jetbrains.kotlin", "kotlin-scripting-jvm-host-embeddable", kotlinVersion)
+    implementation("org.jetbrains.kotlin", "kotlin-script-runtime", kotlinVersion)
+    implementation("org.jetbrains.kotlin", "kotlin-compiler-embeddable", kotlinVersion)
+    implementation("io.github.microutils", "kotlin-logging", "1.7.8")
+    implementation("com.illposed.osc", "javaosc-core", "0.6")
+>>>>>>> Initial working with Synth and Sample
 
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.0")
     testImplementation("com.willowtreeapps.assertk", "assertk-jvm", "0.21")
 
     runtimeOnly("org.slf4j","slf4j-simple","1.7.29")
+<<<<<<< HEAD
 }
 
 publishing {
@@ -54,6 +74,9 @@ publishing {
             from(components["java"])
         }
     }
+=======
+    runtimeOnly("org.apache.logging.log4j", "log4j-slf4j-impl", "2.13.0")
+>>>>>>> Initial working with Synth and Sample
 }
 
 tasks.test {
