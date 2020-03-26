@@ -1,4 +1,4 @@
-package pl.pjagielski.punkt
+package pl.pjagielski.punkt.pattern
 
 import assertk.assertThat
 import assertk.assertions.containsExactly

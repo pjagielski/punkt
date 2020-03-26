@@ -1,4 +1,4 @@
-package pl.pjagielski.punkt
+package pl.pjagielski.punkt.pattern
 
 data class Step(
     val beat: Double,
@@ -7,7 +7,8 @@ data class Step(
 ) {
     fun toSample(name: String) = Sample(beat, dur, name)
 
-    fun toSynth(name: String) = Synth(beat, dur, name, midinote)
+    fun toSynth(name: String, amp: Float = 1.0f) =
+        Synth(beat, dur, name, midinote, amp)
 
     fun toMidi() = MidiOut(beat, dur, "test", midinote)
 }
@@ -39,24 +40,41 @@ infix fun ClosedRange<Double>.step(step: Double): Iterable<Double> {
     return sequence.asIterable()
 }
 
-fun Sequence<Number>.phrase(at: Double = 0.0): StepSequence {
+fun Sequence<Number?>.phrase(at: Double = 0.0): StepSequence {
     var current = at
     return this.map {
-        val dur = it.toDouble()
+        val dur = it?.toDouble() ?: return@map null
         val ret = Step(current, dur)
         current += dur
         ret
-    }
+    }.filterNotNull()
 }
 
-fun Sequence<Number>.sample(smp: String, at: Double = 0.0, amp: Float = 1.0f) =
-    this.phrase(at).map { (beat, dur) -> Sample(beat, dur, smp, amp = amp) }
+fun Sequence<Number?>.sample(smp: String, at: Double = 0.0, amp: Float = 1.0f) =
+    this.phrase(at).map { (beat, dur) ->
+        Sample(
+            beat,
+            dur,
+            smp,
+            amp = amp
+        )
+    }
 
-fun StepSequence.synth(name: String) = this.map { it.toSynth(name) }
+fun StepSequence.synth(name: String, amp: Float = 1.0f) = this.map { it.toSynth(name, amp = amp) }
 fun StepSequence.midi() = this.map { it.toMidi() }
 fun StepSequence.sample(name: String) = this.map { it.toSample(name) }
 
 fun NoteSequence.beats(beats: Int) = takeWhile { it.beat < beats }.toList()
+
+fun <T : Any> cycle(range: Iterable<T>) : Sequence<T> {
+    var iter = range.iterator()
+    return generateSequence {
+        if (!iter.hasNext()) {
+            iter = range.iterator()
+        }
+        iter.next()
+    }
+}
 
 fun <T : Any> cycle(vararg xs: T): Sequence<T> {
     var i = 0

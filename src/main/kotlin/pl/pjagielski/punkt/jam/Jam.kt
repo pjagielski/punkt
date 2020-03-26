@@ -1,4 +1,4 @@
-package pl.pjagielski.punkt
+package pl.pjagielski.punkt.jam
 
 import com.illposed.osc.MyOSCMessage
 import com.illposed.osc.OSCMessage
@@ -6,31 +6,41 @@ import com.illposed.osc.OSCMessageInfo
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import pl.pjagielski.punkt.Metronome
+import pl.pjagielski.punkt.config.TrackConfig
+import pl.pjagielski.punkt.midiBridge
+import pl.pjagielski.punkt.osc.OscServer
+import pl.pjagielski.punkt.pattern.*
+import pl.pjagielski.punkt.sounds.Loops
+import pl.pjagielski.punkt.sounds.Samples
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import kotlin.math.pow
 
 data class State(
+    var trackConfig: TrackConfig,
     var notes: List<Note>
 )
 
-class Jam(val samples: Samples, val metronome: Metronome) {
+fun midiToHz(note: Int): Float {
+    return (440.0 * 2.0.pow((note - 69.0) / 12.0)).toFloat()
+}
+
+class Jam(val samples: Samples, val loops: Loops, val metronome: Metronome, val superCollider: OscServer) {
 
     var playing = false
 
-    private val bpm = 100
-    private val beatsPerBar = 8
-
-    private val millisPerBeat: Long
-            get() = ((60.0 / bpm) * 1000).toLong()
-
     fun playAt(state: State, at: LocalDateTime) {
+        val (bpm, beatsPerBar) = state.trackConfig
+        val millisPerBeat = state.trackConfig.millisPerBeat
+
         if (!playing) return
 
         state.notes.forEach { note ->
             val playAt = at.plus((note.beat * millisPerBeat).toLong(), ChronoUnit.MILLIS)
             schedule(playAt.minus(150, ChronoUnit.MILLIS)) {
-                playNote(note, playAt)
+                playNote(note, playAt, bpm)
             }
         }
 
@@ -41,7 +51,7 @@ class Jam(val samples: Samples, val metronome: Metronome) {
         }
     }
 
-    private fun playNote(note: Note, playAt: LocalDateTime) {
+    private fun playNote(note: Note, playAt: LocalDateTime, bpm: Int) {
         when (note) {
             is Synth -> {
                 val freq = midiToHz(note.midinote)
@@ -52,10 +62,21 @@ class Jam(val samples: Samples, val metronome: Metronome) {
                 superCollider.sendInBundle(packet, playAt)
             }
             is Sample -> {
-                val buffer = samples.buffers[note.name] ?: return
+                val buffer = samples[note.name] ?: return
                 val packet = OSCMessage(
                     "/s_new",
                     listOf("playSmp", -1, 0, 1, "buf", buffer.bufNum, "amp", note.amp)
+                )
+                superCollider.sendInBundle(packet, playAt)
+            }
+            is Loop -> {
+                val buffer = loops[note.name] ?: return
+                val packet = OSCMessage(
+                    "/s_new",
+                    listOf(
+                        "sampler", -1, 0, 1, "buf", buffer.bufNum, "amp", note.amp, "bpm", bpm,
+                        "total", buffer.beats, "beats", note.beats, "start", note.startBeat
+                    )
                 )
                 superCollider.sendInBundle(packet, playAt)
             }
@@ -65,14 +86,11 @@ class Jam(val samples: Samples, val metronome: Metronome) {
                     listOf(16, note.midinote, 70),
                     OSCMessageInfo("iii")
                 )
-                schedule(
-                    LocalDateTime.now()
-                        .plus(200, ChronoUnit.MILLIS)) {
+                schedule(LocalDateTime.now().plus(200, ChronoUnit.MILLIS)) {
                     midiBridge.sendNow(noteOnPacket)
                 }
                 val durationMs = (note.duration * 1000).toLong()
-                schedule(
-                    LocalDateTime.now().plus(durationMs + 200, ChronoUnit.MILLIS)) {
+                schedule(LocalDateTime.now().plus(durationMs + 200, ChronoUnit.MILLIS)) {
                     val noteOffPacket = MyOSCMessage(
                         "/midi/off",
                         listOf(16, note.midinote, 70),

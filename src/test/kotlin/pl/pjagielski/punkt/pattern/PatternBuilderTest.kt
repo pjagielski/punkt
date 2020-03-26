@@ -1,4 +1,4 @@
-package pl.pjagielski.punkt
+package pl.pjagielski.punkt.pattern
 
 import assertk.assertThat
 import assertk.assertions.containsExactly
@@ -10,7 +10,7 @@ class PatternBuilderTest {
     @Test
     fun shouldCreateUsingBuilder() {
         val pats = patterns(beats = 4) {
-            + repeat(1.0).sample("bd_haus")
+            +repeat(1.0).sample("bd_haus")
         }
 
         assertThat(pats).extracting { it.beat to it.duration }

@@ -1,6 +1,7 @@
-package pl.pjagielski.punkt
+package pl.pjagielski.punkt.osc
 
 import com.illposed.osc.OSCBundle
+import com.illposed.osc.OSCMessage
 import com.illposed.osc.OSCPacket
 import com.illposed.osc.argument.OSCTimeTag64
 import com.illposed.osc.transport.udp.OSCPortOut
@@ -10,7 +11,15 @@ import java.time.ZoneId
 
 class OscServer(host: InetAddress, port: Int) {
 
+    val oscMeta = OscMeta()
     val oscOut = OSCPortOut(host, port)
+
+    fun sync() {
+        synchronized(oscOut) {
+            oscOut.connect()
+            oscOut.send(OSCMessage("/s_sync"))
+        }
+    }
 
     fun sendInBundle(packet: OSCPacket, runAt: LocalDateTime = LocalDateTime.now()) {
         val timetag = toTimetag(runAt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
@@ -36,6 +45,8 @@ class OscServer(host: InetAddress, port: Int) {
         val timetag = secsSince1900 shl 32 or secsFractional
         return OSCTimeTag64.valueOf(timetag)
     }
+
+    fun nextBufNum() = oscMeta.nextBufNum()
 
     companion object {
         const val TIMETAG_OFFSET = 2208988800L

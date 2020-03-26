@@ -1,5 +1,5 @@
 @file:Suppress("UNCHECKED_CAST")
-package pl.pjagielski.punkt
+package pl.pjagielski.punkt.live
 
 import java.io.File
 import kotlin.script.experimental.api.*

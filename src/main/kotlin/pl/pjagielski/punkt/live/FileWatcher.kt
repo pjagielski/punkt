@@ -1,4 +1,4 @@
-package pl.pjagielski.punkt
+package pl.pjagielski.punkt.live
 
 import com.sun.nio.file.SensitivityWatchEventModifier
 import kotlinx.coroutines.GlobalScope

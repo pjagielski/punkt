@@ -1,5 +1,6 @@
 package pl.pjagielski.punkt
 
+import mu.KotlinLogging
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -13,6 +14,9 @@ class DefaultClock : Clock {
 }
 
 class Metronome(val clock: Clock) {
+
+    private val logger = KotlinLogging.logger {}
+
     lateinit var startAt: LocalDateTime
 
     val bpm = 100
@@ -30,7 +34,7 @@ class Metronome(val clock: Clock) {
 
     fun nextBarAt(): LocalDateTime {
         val currentBar = Math.floorDiv(Duration.between(startAt, clock.currentTime()).toMillis(), millisPerBar)
-        println("Current bar $currentBar")
+        logger.debug("Current bar $currentBar")
         return startAt.plus((currentBar + 1) * millisPerBar, ChronoUnit.MILLIS)
     }
 
