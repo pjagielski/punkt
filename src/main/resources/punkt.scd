@@ -9,7 +9,18 @@ s.quit;
 
 (
 
-SynthDef.new(\playSmp,
+SynthDef.new(\play1,
+	{|amp=1, sus=1, pan=0, rate=1.0, bus=0, blur=1, buf=0|
+		var osc, env;
+		sus = sus * blur;
+		osc = PlayBuf.ar(1, buf, (BufRateScale.ir(buf) * rate), doneAction: Done.freeSelf);
+		osc = (osc * amp);
+		osc = Mix(osc) * 0.5;
+		osc = Pan2.ar(osc, pan);
+		Out.ar(bus, osc)
+}).add;
+
+SynthDef.new(\play2,
 	{|amp=1, sus=1, pan=0, rate=1.0, bus=0, blur=1, buf=0|
 		var osc, env;
 		sus = sus * blur;

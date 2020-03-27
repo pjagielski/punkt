@@ -63,9 +63,10 @@ class Jam(val samples: Samples, val loops: Loops, val metronome: Metronome, val 
             }
             is Sample -> {
                 val buffer = samples[note.name] ?: return
+                val player = "play${buffer.channels}"
                 val packet = OSCMessage(
                     "/s_new",
-                    listOf("playSmp", -1, 0, 1, "buf", buffer.bufNum, "amp", note.amp)
+                    listOf(player, -1, 0, 1, "buf", buffer.bufNum, "amp", note.amp)
                 )
                 superCollider.sendInBundle(packet, playAt)
             }
