@@ -6,6 +6,7 @@ import com.illposed.osc.OSCMessageInfo
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import mu.KotlinLogging
 import pl.pjagielski.punkt.Metronome
 import pl.pjagielski.punkt.config.TrackConfig
 import pl.pjagielski.punkt.midiBridge
@@ -28,6 +29,8 @@ fun midiToHz(note: Int): Float {
 }
 
 class Jam(val samples: Samples, val loops: Loops, val metronome: Metronome, val superCollider: OscServer) {
+
+    private val logger = KotlinLogging.logger {}
 
     var playing = false
 
@@ -55,10 +58,18 @@ class Jam(val samples: Samples, val loops: Loops, val metronome: Metronome, val 
         when (note) {
             is Synth -> {
                 val freq = midiToHz(note.midinote)
-                val packet = OSCMessage(
-                    "/s_new",
-                    listOf(note.name, -1, 0, 1, "freq", freq, "amp", note.amp, "dur", note.duration.toFloat())
-                )
+                val params = listOf(note.name, -1, 0, 1, "freq", freq, "amp", note.amp, "dur", note.duration.toFloat())
+
+                val currentBeat = metronome.currentBeat(note.beat)
+                val lfoParams = note.LFOs
+                    .map { (lfo, param) -> param to lfo.value(currentBeat) }.toMap()
+
+                val synthParams = note.params.merge(lfoParams)
+                    .flatMap { (param, value) -> listOf(param, value.toFloat()) }
+
+                logger.info("Current beat $currentBeat, params $synthParams")
+
+                val packet = OSCMessage("/s_new", params + synthParams)
                 superCollider.sendInBundle(packet, playAt)
             }
             is Sample -> {
@@ -118,4 +129,8 @@ class Jam(val samples: Samples, val loops: Loops, val metronome: Metronome, val 
     fun stop() {
         playing = false
     }
+}
+
+private fun <K, V> Map<K, V>.merge(another: Map<K, V>): Map<K, V> {
+    return this.toMutableMap().apply { putAll(another) }.toMap()
 }

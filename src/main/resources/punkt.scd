@@ -78,7 +78,7 @@ SynthDef(\plucklead, {
 }).add;
 
 SynthDef(\tb303, {
-	|out=0, freq=440, wave=1, cutoff=1200, res=0.2, start=2000, sus=1, dec=0.1, dur=1, amp=1|
+	|out=0, freq=440, wave=1, cutoff=1000, res=0.1, start=100, sus=1, dec=0.1, dur=1, amp=1|
 	var sound;
     var line = Line.ar(1, 0, dur*2, doneAction:2);
 	var volEnv = EnvGen.ar(Env.perc(10e-10, dur), doneAction: 2);
@@ -86,7 +86,7 @@ SynthDef(\tb303, {
  	var waves = [Saw.ar(freq, volEnv), Pulse.ar(freq, 0.5, volEnv)];
 	sound = RLPF.ar(Select.ar(wave, waves), start + (filEnv * cutoff), res).dup;
 	// sound = FreeVerb.ar(sound, room: 2, mix: 0.9);
-	sound = (sound.clip2(0.2) * 4).distort();
+	sound = (sound.clip2(0.1) * 6).distort();
 	Out.ar(out, sound * amp);
 
 }).add;

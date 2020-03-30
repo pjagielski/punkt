@@ -13,6 +13,7 @@ import pl.pjagielski.punkt.pattern.Note
 import pl.pjagielski.punkt.sounds.Loops
 import pl.pjagielski.punkt.sounds.Samples
 import java.io.File
+import javax.sound.midi.Track
 import kotlin.script.experimental.jvmhost.BasicJvmScriptingHost
 
 class Application(val config: Config) {
@@ -43,17 +44,17 @@ class Application(val config: Config) {
         val initializeState = watchFile(File(liveFile)) { file ->
             val start = System.currentTimeMillis()
             logger.info("Reloading file...")
-            val func =
-                loadFromScriptKSH<() -> List<Note>>(file, scriptingHost)
+            val func = loadFromScriptKSH<(TrackConfig) -> List<Note>>(file, scriptingHost)
             val stop = System.currentTimeMillis()
             logger.info("Reloading took ${stop - start}ms")
-            state.notes = func.invoke()
+            state.notes = func.invoke(trackConfig)
         }
 
         initializeState()
 
         val clock = DefaultClock()
         val metronome = Metronome(clock)
+        metronome.start()
 
         val jam = Jam(samples, loops, metronome, superCollider)
         jam.start(state)

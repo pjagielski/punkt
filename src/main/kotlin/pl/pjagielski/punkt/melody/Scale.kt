@@ -33,11 +33,8 @@ class Degrees(val degrees: List<Int>) {
 }
 
 fun degrees(degs: List<Int?>) = degs.map { deg -> deg?.let { Degrees(it) } }.asSequence()
-fun degrees(degs: Sequence<Int?>) = degs.map { deg -> deg?.let {
-    Degrees(
-        it
-    )
-} }
+fun degrees(degs: Sequence<Int?>) = degs.map { deg -> deg?.let { Degrees(it) } }
+
 fun chords(chords: Iterable<List<Int>>) = chords.map { Degrees(it) }.asSequence()
 fun chords(chords: Iterable<Chord?>) = chords.map { it?.degrees?.let(::Degrees) }
 
@@ -68,13 +65,7 @@ class Scale(val from: Int, val intervals: Intervals) {
         return degrees.flatMap { deg ->
             if (!diter.hasNext()) return@flatMap sequenceOf<Step>()
             diter.next()?.let { dur ->
-                val ret = deg?.degrees?.map { d ->
-                    Step(
-                        current,
-                        dur,
-                        note(d)
-                    )
-                }?.asSequence()
+                val ret = deg?.degrees?.map { d -> Step(current, dur, note(d)) }?.asSequence()
                 current += dur
                 ret
             } ?: sequenceOf()

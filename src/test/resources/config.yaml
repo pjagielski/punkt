@@ -1,0 +1,7 @@
+configuration:
+  track:
+    bpm: 95
+  locations:
+    liveFile: src/test/kotlin/live.kts
+    samples: work/beats/my
+    loops: work/samples

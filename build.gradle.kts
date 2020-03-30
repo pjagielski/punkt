@@ -11,8 +11,13 @@ plugins {
 >>>>>>> Initial working with Synth and Sample
 =======
     maven
+<<<<<<< HEAD
     publishing
 >>>>>>> Split to packages; Added Config and Application
+=======
+    `maven-publish`
+    id("com.jfrog.bintray") version "1.8.0"
+>>>>>>> Add LFO; Test application
     kotlin("jvm") version("1.3.70")
 }
 
