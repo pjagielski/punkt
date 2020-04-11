@@ -1,7 +1,7 @@
 # punkt - Kotlin Punk
 A live coding music library/environment for Kotlin. For software developers that want to dive into live coding music.
 
-Demo:
+Demo: https://youtu.be/94xzNW6hxR8
 
 [![Punkt demo](screen.png)](https://youtu.be/94xzNW6hxR8?t=120)
 
