@@ -51,14 +51,7 @@ fun Sequence<Number?>.phrase(at: Double = 0.0): StepSequence {
 }
 
 fun Sequence<Number?>.sample(smp: String, at: Double = 0.0, amp: Float = 1.0f) =
-    this.phrase(at).map { (beat, dur) ->
-        Sample(
-            beat,
-            dur,
-            smp,
-            amp = amp
-        )
-    }
+    this.phrase(at).map { (beat, dur) -> Sample(beat, dur, smp, amp = amp) }
 
 fun StepSequence.synth(name: String, amp: Float = 1.0f) = this.map { it.toSynth(name, amp = amp) }
 fun StepSequence.midi() = this.map { it.toMidi() }

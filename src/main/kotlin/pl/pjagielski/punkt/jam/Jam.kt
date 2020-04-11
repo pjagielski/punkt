@@ -64,10 +64,10 @@ class Jam(val samples: Samples, val loops: Loops, val metronome: Metronome, val 
                 val lfoParams = note.LFOs
                     .map { (lfo, param) -> param to lfo.value(currentBeat) }.toMap()
 
-                val synthParams = note.params.merge(lfoParams)
+                val synthParams = (note.params + lfoParams)
                     .flatMap { (param, value) -> listOf(param, value.toFloat()) }
 
-                logger.info("Current beat $currentBeat, params $synthParams")
+                logger.info("beat $currentBeat, synth ${note.name}, params $synthParams")
 
                 val packet = OSCMessage("/s_new", params + synthParams)
                 superCollider.sendInBundle(packet, playAt)
@@ -75,10 +75,7 @@ class Jam(val samples: Samples, val loops: Loops, val metronome: Metronome, val 
             is Sample -> {
                 val buffer = samples[note.name] ?: return
                 val player = "play${buffer.channels}"
-                val packet = OSCMessage(
-                    "/s_new",
-                    listOf(player, -1, 0, 1, "buf", buffer.bufNum, "amp", note.amp)
-                )
+                val packet = OSCMessage("/s_new", listOf(player, -1, 0, 1, "buf", buffer.bufNum, "amp", note.amp))
                 superCollider.sendInBundle(packet, playAt)
             }
             is Loop -> {
@@ -129,8 +126,4 @@ class Jam(val samples: Samples, val loops: Loops, val metronome: Metronome, val 
     fun stop() {
         playing = false
     }
-}
-
-private fun <K, V> Map<K, V>.merge(another: Map<K, V>): Map<K, V> {
-    return this.toMutableMap().apply { putAll(another) }.toMap()
 }

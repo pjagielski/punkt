@@ -33,14 +33,21 @@ data class Sample(
 
 data class Loop(
     override val beat: Double, val name: String,
-    val beats: Int, val startBeat: Int = 0,
+    val beats: Float, val startBeat: Float = 0.0f,
     override val amp: Float = 1.0f, override val duration: Double = 0.0, override val midinote: Int = 0
-) : Note
+) : Note {
+    constructor(beat: Double, name: String, beats: Int, startBeat: Double = 0.0, amp: Float = 1.0f)
+            : this(beat, name, beats.toFloat(), startBeat.toFloat(), amp)
+}
 
-fun Sequence<Synth>.param(param: Param, value: Number) = this.param(param.lowercase(), value)
 
-fun Sequence<Synth>.param(param: String, value: Number) =
-    this.map { it.copy(params = it.params.plus(param to value)) }
+
+fun Sequence<Synth>.namedParams(vararg params: Pair<Param, Number>) = this.params(params.map { (param, value) -> param.lowercase() to value })
+
+fun Sequence<Synth>.params(vararg params: Pair<String, Number>) = this.params(params.toList())
+
+fun Sequence<Synth>.params(params: List<Pair<String, Number>>) =
+    this.map { it.copy(params = it.params + params.toMap()) }
 
 fun Sequence<Synth>.lfo(lfo: LFO, param: Param) = this.lfo(lfo, param.lowercase())
 

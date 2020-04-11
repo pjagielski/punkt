@@ -44,7 +44,7 @@ SynthDef.new(\shape,
 		// level = EnvGen.kr(adsr, Line.kr(1.0, 0.0, dur), levelScale: cutoff);
 		snd = LPF.ar(snd, cutoff);
 		snd = snd + (0.2 * sine);
-		// snd = BPeakEQ.ar(snd, 1500);
+		// snd = FreeVerb.ar(snd, room = 0.9);
 		Out.ar(0, Pan2.ar(FreeVerb.ar(amp * env * snd, room: 0.2)));
 }).add;
 
@@ -64,10 +64,10 @@ SynthDef.new(\sampler,
 
 
 SynthDef(\plucklead, {
-    |out=0, dur=1, amp=1, freq=440, cutoff=7000, start=2000, release=0.8, pan|
+    |out=0, dur=1, amp=1, freq=440, cutoff=7000, start=2000, sus=0.4, rel=0.8, pan|
 	var sound;
 	var voices = 13;
-    var env = Env.adsr(0.1, 0.2, 0.4, release);
+    var env = Env.adsr(0.1, 0.2, sus, rel);
 	var envGen = EnvGen.kr(env, Line.kr(1.0, 0.0, dur), doneAction:2);
     var freqs = {Rand(-2,2)*2**(freq/1200)}.dup(voices);
 	var phases = Array.fill(voices, { 1.0.rand2 });
@@ -92,7 +92,7 @@ SynthDef(\tb303, {
 }).add;
 
 SynthDef(\tr808, {
-	|out=0, dur=1, amp=1, freq=440, cutoff=1200, start=100, release=0.3|
+	|out=0, dur=1, amp=1, freq=440, cutoff=1200, start=1000, release=0.3|
 	var sound, filEnv, filGen;
     var ampEnv = Env.adsr(0.01, 0.5, 0.2, release);
 	var ampGen = EnvGen.kr(ampEnv, Line.kr(1.0, 0.0, dur/2), doneAction: 2);
@@ -103,7 +103,7 @@ SynthDef(\tr808, {
     filEnv = Env.adsr(0.2, 0.4, 0.1, 0.5);
 	filGen = EnvGen.kr(filEnv, Line.kr(1.0, 0.0, dur), levelScale: cutoff);
 	sound = LPF.ar(sound, start + filGen);
-	sound = BPeakEQ.ar(sound, 200, 3, 3);
+	sound = BPeakEQ.ar(sound, 700, 3, 3);
 	Out.ar(out, Pan2.ar(sound * amp * ampGen));
 }).add;
 )

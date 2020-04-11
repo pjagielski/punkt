@@ -36,7 +36,9 @@ class ScaleTest {
         assertThat(scale.note(3)).isEqualTo(F.sharp())
         assertThat(scale.note(-1)).isEqualTo(B - 12)
         assertThat(scale.note(-2)).isEqualTo(A - 12)
-        assertThat(scale.note(-3)).isEqualTo(A.flat() - 12)
+        assertThat(scale.note(-3)).isEqualTo(G.sharp() - 12)
+        assertThat(scale.note(-4)).isEqualTo(F.sharp() - 12)
+        assertThat(scale.note(-5)).isEqualTo(E - 12)
     }
 
     @Test

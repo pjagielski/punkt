@@ -5,7 +5,12 @@ work
 .idea
 .gradle
 <<<<<<< HEAD
+<<<<<<< HEAD
 src/test/kotlin/live*.kts
 src/test/resources/config.yaml
 =======
 >>>>>>> Initial working with Synth and Sample
+=======
+src/test/kotlin/live*.kts
+src/test/resources/config.yaml
+>>>>>>> Readme

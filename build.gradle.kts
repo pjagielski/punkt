@@ -112,6 +112,25 @@ publishing {
 >>>>>>> Split to packages; Added Config and Application
 }
 
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/pjagielski/punkt")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+            }
+        }
+    }
+
+    publications {
+        register("gpr", MavenPublication::class) {
+            from(components["java"])
+        }
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
     testLogging {

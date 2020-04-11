@@ -15,29 +15,12 @@ class NotesBuilderTest {
 
     @Test
     fun shouldCreateNotePattern() {
-        val scale = Scale(
-            C.sharp(),
-            minor
-        )
+        val scale = Scale(C.sharp(), minor)
         val notes = patterns(beats = 8) {
             +scale
                 .phrase(
-                    degrees(
-                        listOf(
-                            0,
-                            0,
-                            0,
-                            -4,
-                            -4,
-                            -4,
-                            -2,
-                            -2,
-                            -2,
-                            -1,
-                            -1,
-                            -1
-                        )
-                    ), cycle(0.75, 0.75, 0.5)
+                    degrees(listOf(0, 0, 0, -4, -4, -4, -2, -2, -2, -1, -1, -1)),
+                    cycle(0.75, 0.75, 0.5)
                 )
                 .synth("shape")
 
@@ -50,22 +33,7 @@ class NotesBuilderTest {
             val ch7 = listOf(6, 3)
 
             +scale.phrase(
-                chords(
-                    listOf(
-                        ch1,
-                        ch2,
-                        ch1,
-                        ch3,
-                        ch4,
-                        ch3,
-                        ch3,
-                        ch4,
-                        ch3,
-                        ch5,
-                        ch6,
-                        ch7
-                    )
-                ),
+                chords(listOf(ch1, ch2, ch1, ch3, ch4, ch3, ch3, ch4, ch3, ch5, ch6, ch7)),
                 cycle(0.75, 0.75, 0.5)
             ).synth("shape")
         }
