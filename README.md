@@ -1,6 +1,8 @@
 # punkt - Kotlin Punk
 A live coding music library/environment for Kotlin. For software developers that want to dive into live coding music.
 
+[![Punkt demo](https://img.youtube.com/vi/94xzNW6hxR8/0.jpg)](https://www.youtube.com/watch?v=94xzNW6hxR8)
+
 ## Rationale
 * **minimal** - just a sequencer playing samples and synths designed in SuperCollider  
 * **easy to install** - a library + template project, just `git clone`, run and enjoy
