@@ -106,6 +106,20 @@ SynthDef(\tr808, {
 	sound = BPeakEQ.ar(sound, 700, 3, 3);
 	Out.ar(out, Pan2.ar(sound * amp * ampGen));
 }).add;
+
+SynthDef(\dafunk, {
+		|out=0, dur=1, amp=1, freq=440, cutoff=1200, start=250, sus = 0.5, rel=0.2|
+	var osc = Mix.ar([Saw.ar(freq), Saw.ar(freq * 0.7491535384383409)]);
+    var env = Env.adsr(0.3, 0.2, sus, rel);
+	var envGen = EnvGen.kr(env, Line.kr(1.0, 0.0, dur/2), doneAction:2);
+    var filEnv = Env.adsr(0.4, 0.5, 0.2, 0.5);
+	var filGen = EnvGen.kr(filEnv, Line.kr(1.0, 0.0, dur/2), levelScale: cutoff);
+	var sound = BPF.ar(osc, start + filGen, 0.5);
+	sound = Pan2.ar(sound * amp * envGen);
+	sound = (sound.clip2(0.007) * 24).distort();
+	sound = FreeVerb.ar(sound, mix: 0.4, room: 1.8);
+	Out.ar(out, sound);
+}).add;
 )
 
-x = Synth(\plucklead);
+x = Synth(\dafunk);

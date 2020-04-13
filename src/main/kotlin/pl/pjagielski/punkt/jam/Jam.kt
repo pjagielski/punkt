@@ -7,6 +7,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import pl.pjagielski.punkt.Clock
 import pl.pjagielski.punkt.Metronome
 import pl.pjagielski.punkt.config.TrackConfig
 import pl.pjagielski.punkt.midiBridge
@@ -17,6 +18,7 @@ import pl.pjagielski.punkt.sounds.Samples
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import kotlin.math.log
 import kotlin.math.pow
 
 data class State(
@@ -28,7 +30,7 @@ fun midiToHz(note: Int): Float {
     return (440.0 * 2.0.pow((note - 69.0) / 12.0)).toFloat()
 }
 
-class Jam(val samples: Samples, val loops: Loops, val metronome: Metronome, val superCollider: OscServer) {
+class Jam(val samples: Samples, val loops: Loops, val clock: Clock, val superCollider: OscServer) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -40,10 +42,14 @@ class Jam(val samples: Samples, val loops: Loops, val metronome: Metronome, val 
 
         if (!playing) return
 
+        val metronome = Metronome(clock, bpm, beatsPerBar)
+
+        logger.info("beat " + metronome.currentBeat(0.0))
+
         state.notes.forEach { note ->
             val playAt = at.plus((note.beat * millisPerBeat).toLong(), ChronoUnit.MILLIS)
             schedule(playAt.minus(150, ChronoUnit.MILLIS)) {
-                playNote(note, playAt, bpm)
+                playNote(note, playAt, metronome)
             }
         }
 
@@ -54,7 +60,7 @@ class Jam(val samples: Samples, val loops: Loops, val metronome: Metronome, val 
         }
     }
 
-    private fun playNote(note: Note, playAt: LocalDateTime, bpm: Int) {
+    private fun playNote(note: Note, playAt: LocalDateTime, metronome: Metronome) {
         when (note) {
             is Synth -> {
                 val freq = midiToHz(note.midinote)
@@ -83,7 +89,7 @@ class Jam(val samples: Samples, val loops: Loops, val metronome: Metronome, val 
                 val packet = OSCMessage(
                     "/s_new",
                     listOf(
-                        "sampler", -1, 0, 1, "buf", buffer.bufNum, "amp", note.amp, "bpm", bpm,
+                        "sampler", -1, 0, 1, "buf", buffer.bufNum, "amp", note.amp, "bpm", metronome.bpm,
                         "total", buffer.beats, "beats", note.beats, "start", note.startBeat
                     )
                 )
@@ -113,14 +119,14 @@ class Jam(val samples: Samples, val loops: Loops, val metronome: Metronome, val 
 
     private fun schedule(time: LocalDateTime, function: () -> Unit) {
         GlobalScope.launch {
-            delay(Duration.between(metronome.currentTime(), time).toMillis())
+            delay(Duration.between(clock.currentTime(), time).toMillis())
             function.invoke()
         }
     }
 
     fun start(state: State) {
         playing = true
-        playAt(state, metronome.currentTime().plus(100, ChronoUnit.MILLIS))
+        playAt(state, clock.currentTime().plus(100, ChronoUnit.MILLIS))
     }
 
     fun stop() {

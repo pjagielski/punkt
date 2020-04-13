@@ -52,11 +52,8 @@ class Application(val config: Config) {
 
         initializeState()
 
-        val clock = DefaultClock()
-        val metronome = Metronome(clock)
-        metronome.start()
-
-        val jam = Jam(samples, loops, metronome, superCollider)
+        val clock = Clock().apply { start() }
+        val jam = Jam(samples, loops, clock, superCollider)
         jam.start(state)
 
         Thread.currentThread().join()
