@@ -1,9 +1,12 @@
 # punkt - Kotlin Punk
 A live coding music library/environment for Kotlin. For software developers that want to dive into live coding music.
 
-Demo: https://youtu.be/94xzNW6hxR8
-
 [![Punkt demo](screen.png)](https://youtu.be/94xzNW6hxR8?t=120)
+
+Demos: 
+* [Shape Of You Remix](https://www.youtube.com/watch?v=TBDG_34yKys)
+* [Da Funk Remix](https://www.youtube.com/watch?v=OdQQJPpL6Lo)
+* [Shape Of You - deep remix](https://www.youtube.com/watch?v=94xzNW6hxR8)
 
 ## Rationale
 * **minimal** - just a sequencer playing samples and synths designed in SuperCollider  
