@@ -16,8 +16,8 @@ Demos:
 
 ### How to start
 0. Install SuperCollider
-1. Clone template project `git clone punkt-template`
-2. Start SuperCollider and run `punkt.scd`
+1. Clone template project `git clone https://github.com/pjagielski/punkt-template.git`
+2. Start SuperCollider and run [punkt.scd](https://raw.githubusercontent.com/pjagielski/punkt/master/src/main/resources/punkt.scd)
 3. Run `Main.kt` in `punkt-template`
 4. Profit! Just edit `src/main/kotlin/live.kts` in your favourite editor for live-coding 
 
