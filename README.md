@@ -6,7 +6,7 @@ A live coding music library/environment for Kotlin. For software developers that
 Demos: 
 * [Shape Of You Remix](https://www.youtube.com/watch?v=TBDG_34yKys)
 * [Da Funk Remix](https://www.youtube.com/watch?v=OdQQJPpL6Lo)
-* [Shape Of You - deep remix](https://www.youtube.com/watch?v=94xzNW6hxR8)
+* [Shape Of You inspired track](https://www.youtube.com/watch?v=94xzNW6hxR8)
 
 ## Rationale
 * **minimal** - just a sequencer playing samples and synths designed in SuperCollider  
