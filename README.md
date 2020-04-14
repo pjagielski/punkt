@@ -4,9 +4,9 @@ A live coding music library/environment for Kotlin. For software developers that
 [![Punkt demo](screen.png)](https://youtu.be/94xzNW6hxR8?t=120)
 
 Demos: 
-* [Shape Of You Remix](https://www.youtube.com/watch?v=TBDG_34yKys)
-* [Da Funk Remix](https://www.youtube.com/watch?v=OdQQJPpL6Lo)
-* [Shape Of You inspired track](https://www.youtube.com/watch?v=94xzNW6hxR8)
+* [Shape Of You Remix](https://www.youtube.com/watch?v=TBDG_34yKys?t=180)
+* [Da Funk Remix](https://www.youtube.com/watch?v=OdQQJPpL6Lo?t=136)
+* [Shape Of You inspired track](https://www.youtube.com/watch?v=94xzNW6hxR8?t=80)
 
 ## Rationale
 * **minimal** - just a sequencer playing samples and synths designed in SuperCollider  
