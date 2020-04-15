@@ -90,7 +90,7 @@ This creates following notes:
 | 0, 0.75, 1.5 | C#   |     0  |
 | 2, 2.75, 3.5 | F#   |    -4  |
 | 4, 4.75, 5.5 | A    |    -2  |
-| 6, 6.75, 7.5 | A    |    -1  |
+| 6, 6.75, 7.5 | B    |    -1  |
 
 Which is the "Shape of you" bassline ;)
 
