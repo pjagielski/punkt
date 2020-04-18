@@ -36,7 +36,7 @@ class Jam(val samples: Samples, val loops: Loops, val clock: Clock, val superCol
 
     var playing = false
 
-    fun playAt(state: State, at: LocalDateTime) {
+    fun playAt(bar: Int, state: State, at: LocalDateTime) {
         val (bpm, beatsPerBar) = state.trackConfig
         val millisPerBeat = state.trackConfig.millisPerBeat
 
@@ -44,29 +44,29 @@ class Jam(val samples: Samples, val loops: Loops, val clock: Clock, val superCol
 
         val metronome = Metronome(clock, bpm, beatsPerBar)
 
-        logger.info("beat " + metronome.currentBeat(0.0))
+        logger.info("bar $bar")
 
         state.notes.forEach { note ->
             val playAt = at.plus((note.beat * millisPerBeat).toLong(), ChronoUnit.MILLIS)
             schedule(playAt.minus(150, ChronoUnit.MILLIS)) {
-                playNote(note, playAt, metronome)
+                playNote(bar, note, playAt, metronome)
             }
         }
 
         val nextBarAt = at.plus(beatsPerBar * millisPerBeat, ChronoUnit.MILLIS)
 
         schedule(nextBarAt.minus(200, ChronoUnit.MILLIS)) {
-            playAt(state, nextBarAt)
+            playAt(bar + 1, state, nextBarAt)
         }
     }
 
-    private fun playNote(note: Note, playAt: LocalDateTime, metronome: Metronome) {
+    private fun playNote(bar: Int, note: Note, playAt: LocalDateTime, metronome: Metronome) {
         when (note) {
             is Synth -> {
                 val freq = midiToHz(note.midinote)
                 val params = listOf(note.name, -1, 0, 1, "freq", freq, "amp", note.amp, "dur", note.duration.toFloat())
 
-                val currentBeat = metronome.currentBeat(note.beat)
+                val currentBeat = metronome.currentBeat(bar, note.beat)
                 val lfoParams = note.LFOs
                     .map { (lfo, param) -> param to lfo.value(currentBeat) }.toMap()
 
@@ -126,7 +126,7 @@ class Jam(val samples: Samples, val loops: Loops, val clock: Clock, val superCol
 
     fun start(state: State) {
         playing = true
-        playAt(state, clock.currentTime().plus(100, ChronoUnit.MILLIS))
+        playAt(0, state, clock.currentTime().plus(250, ChronoUnit.MILLIS))
     }
 
     fun stop() {
