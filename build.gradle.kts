@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "pl.pjagielski"
-version = "0.2.0-SNAPSHOT"
+version = "0.1.0"
 
 repositories {
     jcenter()
@@ -23,9 +23,9 @@ dependencies {
     api("org.jetbrains.kotlin", "kotlin-scripting-jvm-host-embeddable", kotlinVersion)
     api("org.jetbrains.kotlin", "kotlin-script-runtime", kotlinVersion)
     api("org.jetbrains.kotlin", "kotlin-compiler-embeddable", kotlinVersion)
-    implementation("io.github.microutils", "kotlin-logging", "1.7.9")
-    implementation("com.uchuhimo", "konf", "0.22.1")
-    implementation("com.illposed.osc", "javaosc-core", "0.6") {
+    api("io.github.microutils", "kotlin-logging", "1.7.9")
+    api("com.uchuhimo", "konf", "0.22.1")
+    api("com.illposed.osc", "javaosc-core", "0.6") {
         exclude("org.slf4j", "slf4j-log4j12")
     }
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.0")
@@ -42,7 +42,7 @@ val sourcesJar by tasks.creating(Jar::class) {
 publishing {
     publications {
         create("lib", MavenPublication::class) {
-            groupId = "pl.jagielski"
+            groupId = "pl.pjagielski"
             artifactId = "punkt"
             from(components["java"])
             artifact(sourcesJar)
