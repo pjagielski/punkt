@@ -8,6 +8,7 @@ import com.illposed.osc.transport.udp.OSCPortOut
 import java.net.InetAddress
 import java.time.LocalDateTime
 import java.time.ZoneId
+import kotlin.script.experimental.jvm.impl.getResourcePathForClass
 
 class OscServer(host: InetAddress, port: Int) {
 
@@ -17,13 +18,17 @@ class OscServer(host: InetAddress, port: Int) {
     fun sync() {
         synchronized(oscOut) {
             oscOut.connect()
-            oscOut.send(OSCMessage("/s_sync"))
+            oscOut.send(OSCMessage("/sync"))
         }
     }
 
-    fun sendInBundle(packet: OSCPacket, runAt: LocalDateTime = LocalDateTime.now()) {
+    fun sendInBundle(vararg packets: OSCPacket, runAt: LocalDateTime = LocalDateTime.now()) {
+        sendInBundle(packets.toList(), runAt)
+    }
+
+    fun sendInBundle(packets: List<OSCPacket>, runAt: LocalDateTime = LocalDateTime.now()) {
         val timetag = toTimetag(runAt.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
-        val bundle = OSCBundle(listOf(packet), timetag)
+        val bundle = OSCBundle(packets, timetag)
         synchronized(oscOut) {
             oscOut.send(bundle)
         }
@@ -46,7 +51,17 @@ class OscServer(host: InetAddress, port: Int) {
         return OSCTimeTag64.valueOf(timetag)
     }
 
-    fun nextBufNum() = oscMeta.nextBufNum()
+    fun nextBufNum() = oscMeta.nextBufId()
+
+    fun group(body: Group.() -> Unit): List<OSCPacket> {
+        val groupId = oscMeta.nextNodeId()
+        val busId = oscMeta.nextBusId()
+
+        val group = Group(groupId, busId)
+        body.invoke(group)
+
+        return group.toOscPackets()
+    }
 
     companion object {
         const val TIMETAG_OFFSET = 2208988800L

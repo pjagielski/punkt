@@ -53,6 +53,7 @@ fun Sequence<Number?>.phrase(at: Double = 0.0): StepSequence {
 
 fun Sequence<Number?>.sample(smp: String, at: Double = 0.0, amp: Float = 1.0f) =
     this.phrase(at).sample(smp)
+
 fun Sequence<Number?>.loop(name: String, beats: Int, at: Double = 0.0, amp: Float = 1.0f) =
     this.phrase(at).loop(name, beats)
 
@@ -61,7 +62,7 @@ fun StepSequence.midi() = this.map { it.toMidi() }
 fun StepSequence.sample(name: String) = this.map { it.toSample(name) }
 fun StepSequence.loop(name: String, beats: Int) = this.map { it.toLoop(name, beats) }
 
-fun NoteSequence.beats(beats: Int) = takeWhile { it.beat < beats }.toList()
+fun <T : Note> Sequence<T>.beats(beats: Int) = takeWhile { it.beat < beats }.toList()
 
 fun <T : Any> cycle(range: Iterable<T>) : Sequence<T> {
     var iter = range.iterator()
@@ -86,6 +87,10 @@ class PatternBuilder(val beats: Int) {
 
     operator fun Sequence<Note>.unaryPlus() {
         sequences.add(this)
+    }
+
+    operator fun List<Sequence<Note>>.unaryPlus() {
+        this.forEach { sequences.add(it) }
     }
 
     fun build() = sequences.flatMap { seq -> seq.beats(beats) }.sortedWith(compareBy(Note::beat, Note::midinote))

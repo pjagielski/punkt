@@ -10,6 +10,7 @@ interface Buffer {
     val bufNum: Int
     val name: String
     val channels: Int
+    val length: Float
 }
 
 abstract class Sounds<T : Buffer>(val superCollider: OscServer) {
@@ -26,17 +27,19 @@ abstract class Sounds<T : Buffer>(val superCollider: OscServer) {
                 return@map null
             }
             val audioInputStream = AudioSystem.getAudioInputStream(sampleFile)
-            val channels = audioInputStream.format.channels
+            val audioFormat = audioInputStream.format
+            val channels = audioFormat.channels
+            val length = audioInputStream.frameLength / audioFormat.frameRate
             val nextBufNum = superCollider.nextBufNum()
             superCollider.sendInBundle(OSCMessage("/b_allocRead", listOf(nextBufNum, sampleFile.absolutePath)))
             val filename = sampleFile.nameWithoutExtension
-            createBuffer(nextBufNum, filename, channels)
+            createBuffer(nextBufNum, filename, channels, length)
         }.filterNotNull().toMap()
         logger.info("Finished loading ${this.javaClass.simpleName} got ${buffers.size} items")
 
     }
 
-    abstract fun createBuffer(nextBufNum: Int, filename: String, channels: Int): Pair<String, T>?
+    abstract fun createBuffer(nextBufNum: Int, filename: String, channels: Int, length: Float): Pair<String, T>?
 
     operator fun get(name: String) = buffers[name]
 }

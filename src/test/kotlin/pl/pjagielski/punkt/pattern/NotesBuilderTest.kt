@@ -17,7 +17,7 @@ class NotesBuilderTest {
     fun shouldCreateNotePattern() {
         val scale = Scale(C.sharp(), minor)
         val notes = patterns(beats = 8) {
-            +scale
+            + scale
                 .phrase(
                     degrees(listOf(0, 0, 0, -4, -4, -4, -2, -2, -2, -1, -1, -1)),
                     cycle(0.75, 0.75, 0.5)
@@ -32,7 +32,7 @@ class NotesBuilderTest {
             val ch6 = listOf(7, 3)
             val ch7 = listOf(6, 3)
 
-            +scale.phrase(
+            + scale.phrase(
                 chords(listOf(ch1, ch2, ch1, ch3, ch4, ch3, ch3, ch4, ch3, ch5, ch6, ch7)),
                 cycle(0.75, 0.75, 0.5)
             ).synth("shape")
@@ -79,4 +79,70 @@ class NotesBuilderTest {
                 Triple(7.5, 0.5, 71)
             )
     }
+
+    @Test
+    fun shouldCreateNoteList() {
+        val scale = Scale(C.sharp(), minor)
+        val notes = patterns(beats = 8) {
+            + scale
+                .phrase(
+                    degrees(listOf(0, 0, 0)),
+                    listOf(0.75, 0.75, 0.5)
+                )
+                .synth("shape")
+        }
+
+        assertThat(notes)
+            .extracting(Note::beat, Note::duration, Note::midinote)
+            .containsExactly(
+                Triple(0.0 , 0.75, 61),
+                Triple(0.75, 0.75, 61),
+                Triple(1.5 , 0.5 , 61)
+            )
+    }
+
+    @Test
+    fun shouldTerminateChordSequence() {
+        val progression = listOf(Chord.I, Chord.IV, Chord.VI, Chord.VII)
+        val scale = Scale(C.sharp(), minor)
+        val notes = patterns(beats = 8) {
+            + scale
+                .phrase(
+                    chords(cycle(progression)),
+                    listOf(1.0)
+                )
+                .synth("shape")
+        }
+
+        assertThat(notes)
+            .extracting(Note::beat, Note::duration, Note::midinote)
+            .containsExactly(
+                Triple(0.0, 1.0, 61),
+                Triple(0.0, 1.0, 64),
+                Triple(0.0, 1.0, 68)
+            )
+    }
+
+    @Test
+    fun shouldCreateRestsForNull() {
+        val progression = listOf(Chord.I, Chord.IV, Chord.VI, Chord.VII)
+        val scale = Scale(C.sharp(), minor)
+        val notes = patterns(beats = 4) {
+            + scale
+                .phrase(progression.flatMap { listOf(null,it,null) }.toDegrees(), cycle(1.0, 0.75, 0.25))
+                .synth("test")
+        }
+
+        assertThat(notes)
+            .extracting(Note::beat, Note::duration, Note::midinote)
+            .containsExactly(
+                Triple(1.0, 0.75, 61),
+                Triple(1.0, 0.75, 64),
+                Triple(1.0, 0.75, 68),
+                Triple(3.0, 0.75, 61),
+                Triple(3.0, 0.75, 66),
+                Triple(3.0, 0.75, 69)
+            )
+    }
+
 }
