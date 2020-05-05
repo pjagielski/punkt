@@ -10,7 +10,6 @@ SynthDef.new(\play1,
         ReplaceOut.ar(bus, osc)
 }).add;
 
-
 SynthDef.new(\play2,
     {|amp=1, sus=1, pan=0, rate=1.0, bus=0, blur=1, buf=0|
         var osc, env;
@@ -21,7 +20,6 @@ SynthDef.new(\play2,
         osc = Pan2.ar(osc, pan);
         ReplaceOut.ar(bus, osc)
 }).add;
-
 
 SynthDef.new(\shape,
     {|bus=0,freq=440, amp=0.5, dur=0.2, cutoff=1200, mix=0.2, release=0.2|
@@ -70,7 +68,7 @@ SynthDef(\plucklead, {
     ReplaceOut.ar(bus, sound * amp * envGen);
 }).add;
 
-SynthDef(\plucklead, {
+SynthDef(\lead, {
     |bus=0, dur=1, amp=1, freq=440, cutoff=7000, start=2000, sus=0.4, rel=0.8|
     var sound;
     var voices = 13;
@@ -93,7 +91,7 @@ SynthDef(\tb303, {
     var filEnv = EnvGen.ar(Env.adsr(10e-10, dec, sus, 0.2), line);
     var waves = [Saw.ar(freq, volEnv), Pulse.ar(freq, 0.5, volEnv)];
 	sound = RLPF.ar(Select.ar(wave, waves), start + (filEnv * cutoff), res);
-	// sound = (sound.clip2(0.1) * 12).distort();
+	sound = (sound.clip2(0.1) * 12).distort();
 	// sound = FreeVerb.ar(sound, room: 0.2, mix: 0.3);
 	ReplaceOut.ar(bus, Pan2.ar(sound) * amp);
 
@@ -141,4 +139,60 @@ SynthDef(\bass, {
 	// output = RLPF.ar(snd, 2000, 0.3);
 	ReplaceOut.ar(bus, snd * amp * env);
 }).add;
+
+SynthDef.new(\lpf,
+	{|bus, cutoff=1000, res=0.9|
+		var osc;
+		osc = In.ar(bus, 2);
+		osc = RLPF.ar(osc, cutoff, res);
+		ReplaceOut.ar(bus, osc)
+	}
+).add;
+
+SynthDef.new(\hpf,
+	{|bus, cutoff=2000, res=0.9|
+		var osc;
+		osc = In.ar(bus, 2);
+		osc = RHPF.ar(osc, cutoff, res);
+		ReplaceOut.ar(bus, osc)
+	}
+).add;
+
+SynthDef.new(\delay,
+    {|bus, echo=0.4, bpm=95, echotime=4|
+		var osc;
+		var beat_dur = 60 / bpm;
+		osc = In.ar(bus, 2);
+		osc = osc + CombL.ar(osc, delaytime: echo * beat_dur, maxdelaytime: 2 * beat_dur, decaytime: echotime * beat_dur);
+		ReplaceOut.ar(bus, osc)
+    }
+).add;
+
+SynthDef.new(\dist,
+	{|bus, drive=0.1|
+		var osc;
+		osc = In.ar(bus, 2);
+		osc = (osc * (drive * 50)).clip(0,0.2).fold2(2);
+		ReplaceOut.ar(bus, osc)
+	}
+).add;
+
+SynthDef.new(\chop,
+	{|bus, chop=2, sus=1.0|
+		var osc;
+		osc = In.ar(bus, 2);
+		osc = osc * LFPulse.kr(chop / sus, add: 0.01);
+		ReplaceOut.ar(bus, osc)
+	}
+).add;
+
+SynthDef.new(\freeGroup,
+	{ arg bus, sus; var osc;
+		osc = In.ar(bus, 2);
+		osc = EnvGen.ar(Env([1,1,0],[sus * 8, 0.1]), doneAction: 14) * osc;
+		DetectSilence.ar(osc, amp:0.000000001, time: 0.5, doneAction: 14);
+		OffsetOut.ar(0, osc[0]);
+		OffsetOut.ar(1, osc[1]);
+}).add;
+
 )

@@ -138,7 +138,7 @@ class Jam(val samples: Samples, val loops: Loops, val clock: Clock, val superCol
                 logger.info("beat $currentBeat, fx $fxName, params $args")
                 node(fxName, position = TAIL, params = args)
             }
-            node("makeSound", position = TAIL, params = listOf("sus", dur))
+            node("freeGroup", position = TAIL, params = listOf("sus", dur))
         }
 
         superCollider.sendInBundle(packets, runAt = playAt)
