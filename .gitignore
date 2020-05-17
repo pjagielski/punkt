@@ -4,5 +4,6 @@ out
 work
 .idea
 .gradle
+.vscode
 src/test/kotlin/live*.kts
 src/test/resources/config.yaml

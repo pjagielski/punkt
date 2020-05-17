@@ -1,5 +1,7 @@
-# punkt - Kotlin Punk
+# PunKt - Kotlin Punk
 A live coding music library/environment for Kotlin. For software developers who want to dive into live coding music.
+
+"Punkt" is "point" in Polish.
 
 [![Punkt demo](screen.png)](https://youtu.be/94xzNW6hxR8?t=120)
 
@@ -15,7 +17,7 @@ Demos:
 * **data-oriented** - patterns and melodies represented as data structure, making it easy to test and visualize
 
 ### How to start
-0. Install [SuperCollider](https://supercollider.github.io/download)
+0. Install [SuperCollider](https://supercollider.github.io/download) (at least 3.10)
 1. Clone [template project](https://github.com/pjagielski/punkt-template) `git clone https://github.com/pjagielski/punkt-template.git`
 2. Start SuperCollider, boot server (Server->Boot Server) and run [punkt-synths.scd](https://raw.githubusercontent.com/pjagielski/punkt/master/src/main/resources/punkt-synths.scd)
 3. Run `Main.kt` in `punkt-template`
@@ -26,7 +28,7 @@ Demos:
 * **sequence API** - great standard library with lazy immutable sequences for making patterns
 * **DSL builders** - extension methods and operator overloading makes it easy to create powerful DSLs 
 * **scripting** - a file watcher and API for compiling/evaluating script whenever it changes
-* **coroutines** - makes trivial to trigger asynchronous event from anywhere in your code
+* **coroutines** - makes trivial to trigger an asynchronous event from anywhere in your code
 * **mainstream** - it's great to learn Clojure or Haskell, but it's even better that your project uses technology that reaches lots of potential users ;) 
 
 ### Minimal example
@@ -98,14 +100,14 @@ Which is the "Shape of you" bassline ;)
 TB-303 pentatonic arpeggio with LFO
 ```kotlin
     val pentatonic = Scale(C.sharp(), pentatonic)
-    val lfo = LFO(1000.0, 3200.0, length = 1.5)
+    val lfo = LFO(1000, 3200, length = 1.5)
     
     patterns(beats = 8) {
         + pentatonic.low()
             .phrase(degrees(cycle(cycle((0..4)).take(10).toList())), cycle(0.25))
             .synth("tb303", amp = 0.2f)
             .params("sus" to 0.3, "dec" to 0.2, "start" to 100)
-            .lfo(lfo, "cutoff")
+            .params("cutoff" to lfo)
     }
 ``` 
 
@@ -126,10 +128,26 @@ TB-303 pentatonic arpeggio with LFO
 ```
 
 ### Inspirations
-* **ORCA** - simplicity (just a sequencer)
-* **openRNDR** - script-driven live coding
-* **leipzig** - data-orientation
-* **FoxDot/Tidal** - synth design, Dirt sampler
+* **[ORCΛ](https://github.com/hundredrabbits/Orca)** - simplicity (just a sequencer)
+* **[openRNDR](https://github.com/openrndr/openrndr)** - kotlin script-driven live coding
+* **[Leipzig](https://github.com/ctford/leipzig)** - music as data
+* **[FoxDot](https://github.com/Qirky/FoxDot)** - synth design, OSC implementation
+* **[Tidal](https://github.com/tidalcycles/Tidal)** - patterns, SuperDirt
+* **[Sonic-Pi](https://github.com/samaaron/sonic-pi)** - live loops, script-driven live coding
+
+### Changelog
+
+#### 0.2.0 - TBR
+* introduced effects
+* new effects: `lpf`, `hpf`, `delay`, `dist`, `chop`
+* new synth: `lead` 
+* **BREAKING**: synth params API cleanup
+* events logging
+ 
+#### 0.1.0 - 20.04.2020
+* initial version ;)
+* `sample` and `loop` support
+* new synths: `tb303`, `tr808`, `plucklead`, `da-funk`
 
 ### Roadmap
 * OSC/MIDI out

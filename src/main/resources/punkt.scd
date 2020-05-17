@@ -1,5 +1,5 @@
 (
-var path = PathName.new(thisProcess.nowExecutingPath).pathOnly +/+ "punkt-synths.scd";
+var synthsPath = PathName.new(thisProcess.nowExecutingPath).pathOnly +/+ "punkt-synths.scd";
 s.reboot { // server options are only updated on reboot
 	// configure the sound server: here you could add hardware specific options
 	// see http://doc.sccode.org/Classes/ServerOptions.html
@@ -13,6 +13,6 @@ s.reboot { // server options are only updated on reboot
 	s.latency = 0.2;
 	// boot the server
 	s.waitForBoot {
-		path.load()
+		synthsPath.load();
     }
 })

@@ -6,4 +6,8 @@ data class TrackConfig(
 ) {
     val millisPerBeat: Long
         get() = ((60.0 / bpm) * 1000).toLong()
+
+    val secsPerBeat: Double
+        get() = 60.0 / bpm
+
 }

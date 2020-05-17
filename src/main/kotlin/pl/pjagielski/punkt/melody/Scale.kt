@@ -1,5 +1,7 @@
 package pl.pjagielski.punkt.melody
 
+import javaslang.collection.Seq
+import kotlinx.coroutines.yield
 import pl.pjagielski.punkt.pattern.Step
 import pl.pjagielski.punkt.pattern.StepSequence
 import kotlin.math.absoluteValue
@@ -35,8 +37,9 @@ class Degrees(val degrees: List<Int>) {
 fun degrees(degs: List<Int?>) = degs.map { deg -> deg?.let { Degrees(it) } }.asSequence()
 fun degrees(degs: Sequence<Int?>) = degs.map { deg -> deg?.let { Degrees(it) } }
 
-fun chords(chords: Iterable<List<Int>>) = chords.map { Degrees(it) }.asSequence()
-fun chords(chords: Iterable<Chord?>) = chords.map { it?.degrees?.let(::Degrees) }
+@JvmName("iterableListChords") fun chords(chords: Iterable<List<Int>>) = chords.map { Degrees(it) }.asSequence()
+@JvmName("iterableChords") fun chords(chords: Iterable<Chord?>) = chords.map { it?.degrees?.let(::Degrees) }.asSequence()
+@JvmName("sequenceChords") fun chords(chords: Sequence<Chord?>) = chords.map { it?.degrees?.let(::Degrees) }
 
 fun Iterable<Chord?>.toDegrees(): Sequence<Degrees?> = this.map { it?.degrees?.let(::Degrees) }.asSequence()
 fun Sequence<Chord?>.toDegrees(): Sequence<Degrees?> = this.map { it?.degrees?.let(::Degrees) }
@@ -60,16 +63,16 @@ class Scale(val from: Int, val intervals: Intervals) {
     fun phrase(degrees: Sequence<Degrees?>, durations: List<Double?>, at: Double = 0.0) =
         phrase(degrees, durations.iterator(), at)
 
-    private fun phrase(degrees: Sequence<Degrees?>, diter: Iterator<Double?>, at: Double = 0.0): StepSequence {
+    private fun phrase(degrees: Sequence<Degrees?>, durIt: Iterator<Double?>, at: Double = 0.0): StepSequence {
         var current = at
-        return degrees.flatMap { deg ->
-            if (!diter.hasNext()) return@flatMap sequenceOf<Step>()
-            diter.next()?.let { dur ->
+        return degrees.map { deg ->
+            if (!durIt.hasNext()) return@map null
+            durIt.next()?.let { dur ->
                 val ret = deg?.degrees?.map { d -> Step(current, dur, note(d)) }?.asSequence()
                 current += dur
                 ret
             } ?: sequenceOf()
-        }
+        }.takeWhile { it != null }.filterNotNull().flatten()
     }
 
     private fun findNote(degree: Int, intervals: Sequence<Int>, next: (Int, Int) -> Int) : Int {

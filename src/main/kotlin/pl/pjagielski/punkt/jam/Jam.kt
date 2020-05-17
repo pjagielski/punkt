@@ -1,7 +1,6 @@
 package pl.pjagielski.punkt.jam
 
 import com.illposed.osc.MyOSCMessage
-import com.illposed.osc.OSCMessage
 import com.illposed.osc.OSCMessageInfo
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -11,14 +10,16 @@ import pl.pjagielski.punkt.Clock
 import pl.pjagielski.punkt.Metronome
 import pl.pjagielski.punkt.config.TrackConfig
 import pl.pjagielski.punkt.midiBridge
+import pl.pjagielski.punkt.osc.Group
 import pl.pjagielski.punkt.osc.OscServer
+import pl.pjagielski.punkt.osc.Position.HEAD
+import pl.pjagielski.punkt.osc.Position.TAIL
 import pl.pjagielski.punkt.pattern.*
 import pl.pjagielski.punkt.sounds.Loops
 import pl.pjagielski.punkt.sounds.Samples
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import kotlin.math.log
 import kotlin.math.pow
 
 data class State(
@@ -60,40 +61,52 @@ class Jam(val samples: Samples, val loops: Loops, val clock: Clock, val superCol
         }
     }
 
+    private fun ParamMap.compute(currentBeat: Double) : List<Pair<String, Float>> {
+        return this.map { (k, v) ->
+            val compValue = when (v) {
+                is Value.Fixed -> v.value.toFloat()
+                is Value.Dynamic -> v.lfo.value(currentBeat).toFloat()
+            }
+            k to compValue
+        }
+    }
+
     private fun playNote(bar: Int, note: Note, playAt: LocalDateTime, metronome: Metronome) {
+        val currentBeat = metronome.currentBeat(bar, note.beat)
+
         when (note) {
             is Synth -> {
                 val freq = midiToHz(note.midinote)
-                val params = listOf(note.name, -1, 0, 1, "freq", freq, "amp", note.amp, "dur", note.duration.toFloat())
-
-                val currentBeat = metronome.currentBeat(bar, note.beat)
-                val lfoParams = note.LFOs
-                    .map { (lfo, param) -> param to lfo.value(currentBeat) }.toMap()
-
-                val synthParams = (note.params + lfoParams)
-                    .flatMap { (param, value) -> listOf(param, value.toFloat()) }
-
+                val dur = note.duration.toFloat()
+                val params = listOf("freq", freq, "amp", note.amp, "dur", dur)
+                val synthParams = note.params.compute(currentBeat).flatMap { it.toList() }
                 logger.info("beat $currentBeat, synth ${note.name}, params $synthParams")
 
-                val packet = OSCMessage("/s_new", params + synthParams)
-                superCollider.sendInBundle(packet, playAt)
+                sendInGroup(note, dur, currentBeat, playAt) {
+                    node(note.name, position = HEAD, params = params + synthParams)
+                }
             }
             is Sample -> {
                 val buffer = samples[note.name] ?: return
                 val player = "play${buffer.channels}"
-                val packet = OSCMessage("/s_new", listOf(player, -1, 0, 1, "buf", buffer.bufNum, "amp", note.amp))
-                superCollider.sendInBundle(packet, playAt)
+
+                logger.info("beat $currentBeat, sample ${note.name}")
+
+                sendInGroup(note, buffer.length, currentBeat, playAt) {
+                    node(player, position = HEAD, params = listOf("buf", buffer.bufNum, "amp", note.amp))
+                }
             }
             is Loop -> {
                 val buffer = loops[note.name] ?: return
-                val packet = OSCMessage(
-                    "/s_new",
-                    listOf(
-                        "sampler", -1, 0, 1, "buf", buffer.bufNum, "amp", note.amp, "bpm", metronome.bpm,
-                        "total", buffer.beats, "beats", note.beats, "start", note.startBeat
+
+                logger.info("beat $currentBeat, loop ${note.name}, length ${buffer.length}")
+
+                sendInGroup(note, buffer.length, currentBeat, playAt) {
+                    node("sampler", position = HEAD, params = listOf(
+                        "buf", buffer.bufNum, "amp", note.amp, "bpm", metronome.bpm,
+                        "total", buffer.beats, "beats", note.beats, "start", note.startBeat)
                     )
-                )
-                superCollider.sendInBundle(packet, playAt)
+                }
             }
             is MidiOut -> {
                 val noteOnPacket = MyOSCMessage(
@@ -115,6 +128,20 @@ class Jam(val samples: Samples, val loops: Loops, val clock: Clock, val superCol
                 }
             }
         }
+    }
+
+    private fun <T : WithFX<T>> sendInGroup(item: WithFX<T>, dur: Float, currentBeat: Double, playAt: LocalDateTime, builder: Group.() -> Unit) {
+        val packets = superCollider.group {
+            builder()
+            item.fxs.forEach { fxName, fx ->
+                val args = fx.params.compute(currentBeat).flatMap { it.toList() }
+                logger.info("beat $currentBeat, fx $fxName, params $args")
+                node(fxName, position = TAIL, params = args)
+            }
+            node("freeGroup", position = TAIL, params = listOf("sus", dur))
+        }
+
+        superCollider.sendInBundle(packets, runAt = playAt)
     }
 
     private fun schedule(time: LocalDateTime, function: () -> Unit) {
