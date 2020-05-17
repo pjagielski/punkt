@@ -140,7 +140,7 @@ TB-303 pentatonic arpeggio with LFO
 
 ### Changelog
 
-#### 0.2.0 - TBR
+#### 0.2.0 - 17.05.2020
 * introduced effects
 * new effects: `lpf`, `hpf`, `delay`, `dist`, `chop`
 * new synth: `lead` 
