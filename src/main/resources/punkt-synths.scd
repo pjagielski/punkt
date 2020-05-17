@@ -29,7 +29,7 @@ SynthDef.new(\shape,
         sine = SinOsc.ar(freq / 2);
         adsr = Env.adsr(0.01, 0.6, 0.1, release);
         snd = (osc2 * mix) + ((1 - mix) * osc1);
-        env = EnvGen.kr(adsr, Line.kr(1.0, 0.0, dur/2), doneAction:2);
+        env = EnvGen.kr(adsr, Line.kr(1.0, 0.0, dur/2), doneAction:0);
         // level = EnvGen.kr(adsr, Line.kr(1.0, 0.0, dur), levelScale: cutoff);
         snd = LPF.ar(snd, cutoff);
         snd = snd + (0.2 * sine);
@@ -74,13 +74,13 @@ SynthDef(\lead, {
     var voices = 13;
     var env = Env.adsr(0.1, 0.2, sus, rel);
     var envGen = EnvGen.ar(env, Line.kr(1.0, 0.0, dur), doneAction:0);
-    var freqs = {Rand(-2,2)*2**(freq/1200)}.dup(voices);
+    var freqs = {Rand(-2,2)*2**(freq/2200)}.dup(voices);
     var phases = Array.fill(voices, { 1.0.rand2 });
     sound =  LFSaw.ar(freq + freqs, phases);
     sound = LPF.ar(sound, start + cutoff);
 
-    // sound = bus.ar(sound, mix: 0.5, room: 2);
-    ReplaceOut.ar(bus, sound * amp * envGen);
+	// sound = FreeVerb.ar(sound, mix: 0.7, room: 2.5);
+	ReplaceOut.ar(bus, Splay.ar(sound * amp, 1) * envGen);
 }).add;
 
 SynthDef(\tb303, {
@@ -131,13 +131,13 @@ SynthDef(\bass, {
 	|bus=0, freq=440, amp=0.5, dur=1|
 	var snd, env, oscfreq, output;
 	oscfreq = {freq * LFNoise2.kr(0.5).range(0.98, 1.02)}!17;
-	snd = Splay.ar(LFSaw.ar(oscfreq, mul: amp));
+	snd = Splay.ar(Pulse.ar(oscfreq, 0.3, mul: amp));
 	snd = Splay.ar(snd, SinOsc.ar(freq/2) * 2);
 	env = EnvGen.kr(Env.adsr(0.2, 2, 0, 0.2), Line.kr(1.0, 0.0, dur/2), doneAction: 0);
 	// env = Env.adsr(0.2, 2, 0, 0.2).kr(doneAction:0, gate: gate);
-	// output = snd
+	output = snd;
 	// output = RLPF.ar(snd, 2000, 0.3);
-	ReplaceOut.ar(bus, snd * amp * env);
+	ReplaceOut.ar(bus, output * amp * env);
 }).add;
 
 SynthDef.new(\lpf,

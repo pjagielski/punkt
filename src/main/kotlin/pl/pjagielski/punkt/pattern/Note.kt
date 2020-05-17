@@ -129,13 +129,22 @@ data class Loop(
 @JvmName("seqLoopFxN") fun Sequence<Loop>.fx(name: String, vararg params: Pair<String, Number>) = this.map { it.addFxN(name, *params) }
 @JvmName("seqLoopFxL") fun Sequence<Loop>.fx(name: String, vararg params: Pair<String, LFO>) = this.map { it.addFxL(name, *params) }
 
-@JvmName("sampleFxNList") fun Sequence<Sample>.fx(name: String, param: Pair<String, Sequence<Number>>) =
+@JvmName("sampleFxNSeq") fun Sequence<Sample>.fx(name: String, param: Pair<String, Sequence<Number>>) =
     this.zip(param.second).map { (smp, value) -> smp.addFxN(name, param.first to value) }
 
-@JvmName("synthFxNList") fun Sequence<Synth>.fx(name: String, param: Pair<String, Sequence<Number>>) =
+@JvmName("sampleFxNList") fun Sequence<Sample>.fx(name: String, param: Pair<String, List<Number>>) =
+    this.fx(name, param.first to param.second.asSequence())
+
+@JvmName("synthFxNSeq") fun Sequence<Synth>.fx(name: String, param: Pair<String, Sequence<Number>>) =
     this.zip(param.second).map { (smp, value) -> smp.addFxN(name, param.first to value) }
 
-@JvmName("loopFxNList") fun Sequence<Loop>.fx(name: String, param: Pair<String, Sequence<Number>>) =
+@JvmName("synthFxNList") fun Sequence<Synth>.fx(name: String, param: Pair<String, List<Number>>) =
+    this.fx(name, param.first to param.second.asSequence())
+
+@JvmName("loopFxNSeq") fun Sequence<Loop>.fx(name: String, param: Pair<String, Sequence<Number>>) =
     this.zip(param.second).map { (smp, value) -> smp.addFxN(name, param.first to value) }
 
-fun Sequence<Note>.mute() = emptySequence<Note>()
+@JvmName("loopFxNList") fun Sequence<Loop>.fx(name: String, param: Pair<String, List<Number>>) =
+    this.fx(name, param.first to param.second.asSequence())
+
+fun <T : Note> Sequence<T>.mute() = emptySequence<T>()
