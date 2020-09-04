@@ -125,7 +125,7 @@ TB-303 pentatonic arpeggio with LFO
                 progression.flatMap { listOf(it, null, it) }.toDegrees(),
                 cycle(1.0, 0.25, 0.75)
             )
-            .synth("plucklead", amp = 0.25f)
+            .synth("lead", amp = 0.25f)
             .params("cutoff" to 1500)
     }
 ```
@@ -140,6 +140,15 @@ TB-303 pentatonic arpeggio with LFO
 
 ### Changelog
 
+### 0.3.0 - ?
+* introduced separate tracks with global effects
+* new global effects: `reverb`, `delay`, `djf`
+* new effects: `djf`, `waveDist`, `squiz`
+* new synths: `piano`, `bass8`
+* new note methods: `amp`, `track`
+* fluent API for effects
+* initial MIDI out support
+
 #### 0.2.0 - 17.05.2020
 * introduced effects
 * new effects: `lpf`, `hpf`, `delay`, `dist`, `chop`
@@ -153,9 +162,10 @@ TB-303 pentatonic arpeggio with LFO
 * new synths: `tb303`, `tr808`, `plucklead`, `da-funk`
 
 ### Roadmap
-* OSC/MIDI out
+* ~~OSC/MIDI out~~ (0.3.0)
+* multiple OSC/MIDI outputs
 * OSC/MIDI in
-* add effects on separate channels
+* ~~add effects on separate channels~~ (0.3.0)
 * pattern randomization
 * visualization
 

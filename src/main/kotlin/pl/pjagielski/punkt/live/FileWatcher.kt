@@ -21,7 +21,6 @@ class FileWatcher(val file: File, private val onChange: (File) -> Unit) {
             SensitivityWatchEventModifier.HIGH
         )
     }
-    val watchers = mutableListOf<() -> Unit>()
 
     init {
         watchThread

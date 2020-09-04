@@ -1,10 +1,11 @@
-package pl.pjagielski.punkt.note
+package pl.pjagielski.punkt.fx
 
 import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.containsOnly
 import assertk.assertions.extracting
 import org.junit.jupiter.api.Test
+import pl.pjagielski.punkt.param.Value
 import pl.pjagielski.punkt.pattern.*
 
 class FXTest {

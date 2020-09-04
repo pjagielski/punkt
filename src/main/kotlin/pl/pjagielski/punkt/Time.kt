@@ -14,7 +14,7 @@ class Clock {
     }
 }
 
-class Metronome(val clock: Clock, val bpm: Int, val beatsPerBar: Int) {
+class Metronome(val clock: Clock, var bpm: Int, var beatsPerBar: Int) {
 
     private val logger = KotlinLogging.logger {}
 

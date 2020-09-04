@@ -8,7 +8,6 @@ import com.illposed.osc.transport.udp.OSCPortOut
 import java.net.InetAddress
 import java.time.LocalDateTime
 import java.time.ZoneId
-import kotlin.script.experimental.jvm.impl.getResourcePathForClass
 
 class OscServer(host: InetAddress, port: Int) {
 
@@ -53,11 +52,12 @@ class OscServer(host: InetAddress, port: Int) {
 
     fun nextBufNum() = oscMeta.nextBufId()
 
-    fun group(body: Group.() -> Unit): List<OSCPacket> {
-        val groupId = oscMeta.nextNodeId()
-        val busId = oscMeta.nextBusId()
+    fun group(bid: Int? = null, gid: Int? = null, pgid: Int? = null, body: Group.() -> Unit): List<OSCPacket> {
+        val groupId = gid ?: oscMeta.nextNodeId()
+        val busId = bid ?: oscMeta.nextBusId()
+        val parentGroupId = pgid ?: oscMeta.defaultGroupId
 
-        val group = Group(groupId, busId)
+        val group = Group(groupId, busId, parentGroupId)
         body.invoke(group)
 
         return group.toOscPackets()
