@@ -142,7 +142,7 @@ TB-303 pentatonic arpeggio with LFO
 
 ### Changelog
 
-### 0.3.0 - ?
+### 0.3.0 - 09.09.2020
 * introduced separate tracks with global effects
 * new global effects: `reverb`, `delay`, `djf`
 * new effects: `djf`, `waveDist`, `squiz`
