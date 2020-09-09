@@ -8,6 +8,22 @@ import org.junit.jupiter.api.Test
 class PatternTest {
 
     @Test
+    fun shouldCreatePhrase() {
+        val phrase = repeat(1).phrase().take(8)
+
+        assertThat(phrase.toList()).extracting(Step::beat)
+            .containsExactly(0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0)
+    }
+
+    @Test
+    fun shouldCreateSamplePhrase() {
+        val phrase = repeat(1).phrase().sample("test").take(8)
+
+        assertThat(phrase.toList()).extracting(Note::beat)
+            .containsExactly(0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0)
+    }
+
+    @Test
     fun shouldCreatePattern() {
         val p1 = repeat(1.0).sample("bd_haus").beats(4)
         val p2 = cycle(1.0, 0.5).sample("bd_haus").beats(4)

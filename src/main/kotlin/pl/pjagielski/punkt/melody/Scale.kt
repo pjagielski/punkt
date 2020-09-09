@@ -1,7 +1,5 @@
 package pl.pjagielski.punkt.melody
 
-import javaslang.collection.Seq
-import kotlinx.coroutines.yield
 import pl.pjagielski.punkt.pattern.Step
 import pl.pjagielski.punkt.pattern.StepSequence
 import kotlin.math.absoluteValue
@@ -17,6 +15,10 @@ val B = 71
 fun Int.sharp() = inc()
 fun Int.flat() = dec()
 
+fun Int.low() = this - 12
+fun Int.high() = this + 12
+
+
 sealed class Intervals(val intervals: List<Int>) {
 
     fun reversed(): Intervals =
@@ -30,7 +32,7 @@ sealed class Intervals(val intervals: List<Int>) {
     object pentatonic : Intervals(listOf(3,2,2,3,2))
 }
 
-class Degrees(val degrees: List<Int>) {
+data class Degrees(val degrees: List<Int>) {
     constructor(vararg degrees: Int) : this(degrees.toList())
 }
 
@@ -46,8 +48,8 @@ fun Sequence<Chord?>.toDegrees(): Sequence<Degrees?> = this.map { it?.degrees?.l
 
 class Scale(val from: Int, val intervals: Intervals) {
 
-    fun low() = Scale(from - 12, intervals)
-    fun high() = Scale(from + 12, intervals)
+    fun low() = Scale(from.low(), intervals)
+    fun high() = Scale(from.high(), intervals)
 
     fun note(degree: Int): Int {
         return when {

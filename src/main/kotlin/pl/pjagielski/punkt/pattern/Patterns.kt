@@ -5,29 +5,20 @@ data class Step(
     val dur: Double,
     val midinote: Int = 0
 ) {
-    fun toSample(name: String) = Sample(beat, dur, name)
+    fun toSample(name: String, amp: Float = 1.0f, track: Int? = null) =
+        Sample(beat, dur, name, amp, track = track)
 
-    fun toSynth(name: String, amp: Float = 1.0f) =
-        Synth(beat, dur, name, midinote, amp)
+    fun toSynth(name: String, amp: Float = 1.0f, track: Int? = null) =
+        Synth(beat, dur, name, midinote, amp, track = track)
 
-    fun toMidi() = MidiOut(beat, dur, "test", midinote)
-    fun toLoop(name: String, beats: Int) = Loop(beat, name, beats)
+    fun toLoop(name: String, beats: Float, startBeat: Float = 0.0f, amp: Float = 1.0f, track: Int? = null) =
+        Loop(beat, name, beats, startBeat, amp = amp, track = track)
+
+    fun toMidi(channel: Int) = MidiOut(beat, dur, channel, midinote)
 }
 
 typealias StepSequence = Sequence<Step>
 typealias NoteSequence = Sequence<Note>
-
-//[1, 1/2, 1, 1/2, 1]
-
-//0, []
-//1   -> 1, [[0,1]]
-//1/2 -> 3/2, [[0,1],[1,1/2]]
-//1   -> 5/2, [[0,1],[1,1/2],[3/2,1]
-
-// 0.0
-// 1   -> [0,1] c:1
-// 1/2 -> [1,1/2] c:3/2
-// 1   -> [3/2,1] c:5/2
 
 infix fun ClosedRange<Double>.step(step: Double): Iterable<Double> {
     require(start.isFinite())
@@ -51,16 +42,22 @@ fun Sequence<Number?>.phrase(at: Double = 0.0): StepSequence {
     }.filterNotNull()
 }
 
-fun Sequence<Number?>.sample(smp: String, at: Double = 0.0, amp: Float = 1.0f) =
-    this.phrase(at).sample(smp)
+fun Sequence<Number?>.sample(smp: String, at: Double = 0.0, amp: Number = 1.0f, track: Int? = null) =
+    this.phrase(at).sample(smp, amp.toFloat(), track)
 
-fun Sequence<Number?>.loop(name: String, beats: Int, at: Double = 0.0, amp: Float = 1.0f) =
-    this.phrase(at).loop(name, beats)
+fun Sequence<Number?>.loop(name: String, beats: Number, startBeat: Number = 0.0f, at: Double = 0.0, amp: Number = 1.0f, track: Int? = null) =
+    this.phrase(at).loop(name, beats, startBeat, amp.toFloat(), track)
 
-fun StepSequence.synth(name: String, amp: Float = 1.0f) = this.map { it.toSynth(name, amp = amp) }
-fun StepSequence.midi() = this.map { it.toMidi() }
-fun StepSequence.sample(name: String) = this.map { it.toSample(name) }
-fun StepSequence.loop(name: String, beats: Int) = this.map { it.toLoop(name, beats) }
+fun StepSequence.synth(name: String, amp: Number = 1.0f, track: Int? = null) =
+    this.map { it.toSynth(name, amp.toFloat(), track) }
+
+fun StepSequence.sample(name: String, amp: Number = 1.0f, track: Int? = null) =
+    this.map { it.toSample(name, amp.toFloat(), track) }
+
+fun StepSequence.loop(name: String, beats: Number, startBeat: Number = 0.0f, amp: Float = 1.0f, track: Int? = null) =
+    this.map { it.toLoop(name, beats.toFloat(), startBeat.toFloat(), amp, track) }
+
+fun StepSequence.midi(channel: Int) = this.map { it.toMidi(channel) }
 
 fun <T : Note> Sequence<T>.beats(beats: Int) = takeWhile { it.beat < beats }.toList()
 
@@ -80,6 +77,8 @@ fun <T : Any> cycle(vararg xs: T): Sequence<T> {
 }
 
 fun <T : Any> repeat(x: T) = generateSequence { x }
+
+fun <T : Any> Sequence<T>.times(n: Int) = this.take(n).toList()
 
 class PatternBuilder(val beats: Int) {
 

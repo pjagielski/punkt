@@ -23,6 +23,7 @@ Demos:
 0. Install [SuperCollider](https://supercollider.github.io/download) (at least 3.10)
 1. Clone [template project](https://github.com/pjagielski/punkt-template) `git clone https://github.com/pjagielski/punkt-template.git`
 2. Start SuperCollider, boot server (Server->Boot Server) and run [punkt-synths.scd](https://raw.githubusercontent.com/pjagielski/punkt/master/src/main/resources/punkt-synths.scd)
+(in case of "Memory allocation problems": clone [punkt project](https://github.com/pjagielski/punkt) and run `src/main/resources/punkt.scd` in SuperCollider.)
 3. Run `Main.kt` in `punkt-template`
 4. Profit! Just edit `src/main/kotlin/live.kts` in your favourite editor for live-coding 
 
@@ -46,7 +47,8 @@ Plays "bd_haus" sample every beat.
 What happened here? `punkt` highly relies on durations to create patterns. If we want to play "bd_haus" sample every
 beat, we could specify this by a list of beats, like `listOf(0, 1, 2, 3, ...)`. We could use `rangeTo` function (e.g. `0..7`) to
 create a fixed range of beats. In `punkt` instead, you specify the durations *between* the beats, and a
-*starting point* - which defaults to 0. This has some advantages:
+*starting point* - which defaults to 0 by this `repeat` function (which is not `repeat` from Kotlin standard library). 
+This has some advantages:
  1. in simple cases, you repeat single value or cycle through small series of values
  2. this creates infinite sequence of beats, which is helpful if you don't know upfront how many beats you need ;) 
  that's why we need to narrow the resulting collection to fixes number of beats with this `patterns(beats = 8) {..}` 
@@ -125,7 +127,7 @@ TB-303 pentatonic arpeggio with LFO
                 progression.flatMap { listOf(it, null, it) }.toDegrees(),
                 cycle(1.0, 0.25, 0.75)
             )
-            .synth("plucklead", amp = 0.25f)
+            .synth("lead", amp = 0.25f)
             .params("cutoff" to 1500)
     }
 ```
@@ -139,6 +141,14 @@ TB-303 pentatonic arpeggio with LFO
 * **[Sonic-Pi](https://github.com/samaaron/sonic-pi)** - live loops, script-driven live coding
 
 ### Changelog
+
+### 0.3.0 - ?
+* introduced separate tracks with global effects
+* new global effects: `reverb`, `delay`, `djf`
+* new effects: `djf`, `waveDist`, `squiz`
+* new synths: `piano`, `bass8`
+* new note methods: `amp`, `track`
+* fluent API for effects
 
 #### 0.2.0 - 17.05.2020
 * introduced effects
@@ -155,7 +165,7 @@ TB-303 pentatonic arpeggio with LFO
 ### Roadmap
 * OSC/MIDI out
 * OSC/MIDI in
-* add effects on separate channels
+* ~~add effects on separate channels~~ (0.3.0)
 * pattern randomization
 * visualization
 

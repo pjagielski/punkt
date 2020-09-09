@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "pl.pjagielski"
-version = "0.2.0"
+version = "0.3.0-SNAPSHOT"
 
 repositories {
     jcenter()
@@ -20,7 +20,7 @@ dependencies {
     api("org.jetbrains.kotlin", "kotlin-scripting-common", kotlinVersion)
     api("org.jetbrains.kotlin", "kotlin-scripting-compiler-embeddable", kotlinVersion)
     api("org.jetbrains.kotlin", "kotlin-scripting-jvm", kotlinVersion)
-    api("org.jetbrains.kotlin", "kotlin-scripting-jvm-host-embeddable", kotlinVersion)
+    api("org.jetbrains.kotlin", "kotlin-scripting-jvm-host", kotlinVersion)
     api("org.jetbrains.kotlin", "kotlin-script-runtime", kotlinVersion)
     api("org.jetbrains.kotlin", "kotlin-compiler-embeddable", kotlinVersion)
     api("io.github.microutils", "kotlin-logging", "1.7.9")

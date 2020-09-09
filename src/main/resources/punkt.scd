@@ -14,5 +14,6 @@ s.reboot { // server options are only updated on reboot
 	// boot the server
 	s.waitForBoot {
 		synthsPath.load();
+		s.sync;
     }
 })
