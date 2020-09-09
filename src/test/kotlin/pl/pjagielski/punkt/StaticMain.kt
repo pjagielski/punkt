@@ -22,9 +22,6 @@ fun main() {
                     repeat(1.0).sample("bd_haus", amp = 0.7),
                     cycle(0.75, 1.25).sample("claps", amp = 0.7, at = 0.75)
                 ).fx("djf", "cutoff" to LFO(0.3, 0.7, 4))
-
-//                + repeat(4.0).loop("amen-break", 4, amp = 0.75, track = 1)
-//                    .fx("dist", "drive" to 0.1)
             }
         }
     }
