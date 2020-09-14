@@ -6,9 +6,10 @@ A live coding music library/environment for Kotlin. For software developers who 
 
 "Punkt" is "point" in Polish.
 
-[![Punkt demo](screen.png)](https://youtu.be/94xzNW6hxR8?t=120)
+[![Punkt demo](screen.png)](https://youtu.be/BdcIM1eKSbA)
 
 Demos: 
+* [Developers](https://youtu.be/BdcIM1eKSbA)
 * [Shape Of You Remix](https://youtu.be/TBDG_34yKys?t=182)
 * [Da Funk Remix](https://youtu.be/OdQQJPpL6Lo?t=136)
 * [Shape Of You inspired track](https://youtu.be/94xzNW6hxR8?t=80)
