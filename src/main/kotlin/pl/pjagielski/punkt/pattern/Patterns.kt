@@ -92,7 +92,10 @@ class PatternBuilder(val beats: Int) {
         this.forEach { sequences.add(it) }
     }
 
-    fun build() = sequences.flatMap { seq -> seq.beats(beats) }.sortedWith(compareBy(Note::beat, Note::midinote))
+    fun build() = sequences
+        .flatMap { seq -> seq.beats(beats) }
+        .sortedWith(
+            compareBy(Note::beat, { it.midinote ?: 0 }))
 }
 
 fun patterns(beats: Int, body: PatternBuilder.() -> Unit): List<Note> {

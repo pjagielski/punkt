@@ -43,34 +43,6 @@ class ScaleTest {
     }
 
     @Test
-    fun shouldResolveChords() {
-        val scaleC = Scale(C, major)
-        val scaleD = Scale(D, minor)
-        val scaleG = Scale(G, major)
-
-        assertThat(phrase(scaleC, Chord.I)).extracting(Step::midinote)
-            .containsExactly(C, E, G)
-
-        assertThat(phrase(scaleC, Chord.II)).extracting(Step::midinote)
-            .containsExactly(D, F, A)
-
-        assertThat(phrase(scaleC, Chord.V))
-            .extracting(Step::midinote)
-            .containsExactly(G, B.low(), D)
-
-        assertThat(phrase(scaleD, Chord.I))
-            .extracting(Step::midinote)
-            .containsExactly(D, F, A)
-
-        assertThat(phrase(scaleG, Chord.I))
-            .extracting(Step::midinote)
-            .containsExactly(G, B, D.high())
-    }
-
-    private fun phrase(scale: Scale, chord: Chord) =
-        scale.phrase(chords(listOf(chord)), listOf(1.0)).toList()
-
-    @Test
     fun shouldCreateDegreePhrase() {
         val phrase = Scale(C, major)
             .phrase(degrees(listOf(0, 2, 4, 2, 0)), cycle(0.5, 1.0))
@@ -88,23 +60,5 @@ class ScaleTest {
             )
     }
 
-    @Test
-    fun shouldCreateChordPhrase() {
-        val prog = listOf(Chord.I, Chord.IV)
-        val phrase = Scale(C, major)
-            .phrase(chords(prog), cycle(0.5, 1.0)).synth("test")
-            .toList()
-
-        assertThat(phrase)
-            .extracting(Note::beat, Note::midinote, Note::duration)
-            .containsExactly(
-                Triple(0.0, 60, 0.5),
-                Triple(0.0, 64, 0.5),
-                Triple(0.0, 67, 0.5),
-                Triple(0.5, 65, 1.0),
-                Triple(0.5, 69, 1.0),
-                Triple(0.5, 60, 1.0)
-            )
-    }
 }
 

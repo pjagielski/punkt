@@ -11,7 +11,7 @@ data class GlobalFX(
     var params: ParamMap
 ) {
     enum class Type(val scName: String) {
-        DELAY("globalDelay"), REVERB("globalReverb"), DJF("globalDjf"), COMP("globalCompressor")
+        DELAY("globalDelay"), REVERB("globalReverb"), DJF("globalDjf"), COMP("globalCompressor"), CHORUS("globalChorus")
     }
 }
 
@@ -57,6 +57,10 @@ data class Track(
 
     fun comp(level: Number = 2, dist: Number = 2) {
         globalFX(GlobalFX.Type.COMP, "level" to level, "dist" to dist)
+    }
+
+    fun chorus(level: Number = 0.9) {
+        globalFX(GlobalFX.Type.CHORUS, "level" to level)
     }
 }
 

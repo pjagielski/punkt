@@ -125,7 +125,7 @@ class NotesBuilderTest {
 
     @Test
     fun shouldCreateRestsForNull() {
-        val progression = listOf(Chord.I, Chord.IV, Chord.VI, Chord.VII)
+        val progression = listOf(Chord.I, Chord.IV)
         val scale = Scale(C.sharp(), minor)
         val notes = patterns(beats = 4) {
             + scale
@@ -139,9 +139,9 @@ class NotesBuilderTest {
                 Triple(1.0, 0.75, 61),
                 Triple(1.0, 0.75, 64),
                 Triple(1.0, 0.75, 68),
-                Triple(3.0, 0.75, 61),
                 Triple(3.0, 0.75, 66),
-                Triple(3.0, 0.75, 69)
+                Triple(3.0, 0.75, 69),
+                Triple(3.0, 0.75, 73)
             )
     }
 

@@ -8,7 +8,7 @@ import pl.pjagielski.punkt.param.*
 interface Note {
     val beat: Double
     val duration: Double
-    val midinote: Int
+    val midinote: Int?
     val amp: Float
     val track: Int?
 }
@@ -30,7 +30,7 @@ data class MidiOut(
 
 data class Sample(
     override val beat: Double, override val duration: Double, val name: String,
-    override val amp: Float = 1.0f, override val midinote: Int = 0,
+    override val amp: Float = 1.0f, override val midinote: Int? = null,
     override val fxs: FXMap = emptyFXMap(), override val track: Int? = null
 ) : Note, WithFX<Sample> {
 
@@ -40,7 +40,7 @@ data class Sample(
 data class Loop(
     override val beat: Double, val name: String,
     val beats: Float, val startBeat: Float = 0.0f,
-    override val amp: Float = 1.0f, override val duration: Double = 0.0, override val midinote: Int = 0,
+    override val amp: Float = 1.0f, override val duration: Double = 0.0, override val midinote: Int? = null,
     override val fxs: FXMap = emptyFXMap(), override val track: Int? = null
 ) : Note, WithFX<Loop> {
     constructor(beat: Double, name: String, beats: Number, startBeat: Number = 0.0, amp: Number = 1.0f)
@@ -82,6 +82,10 @@ data class Loop(
 @JvmName("listLoopAmp") fun List<Sequence<Loop>>.amp(amp: Number) = this.map { it.amp(amp) }
 
 @JvmName("seqSynthAmpSeq") fun Sequence<Synth>.amp(amps: Sequence<Number>) =
+    this.zip(amps).map { (it, amp) -> it.copy(amp = amp.toFloat()) }
+@JvmName("seqSampleAmpSeq") fun Sequence<Sample>.amp(amps: Sequence<Number>) =
+    this.zip(amps).map { (it, amp) -> it.copy(amp = amp.toFloat()) }
+@JvmName("seqLoopAmpSeq") fun Sequence<Loop>.amp(amps: Sequence<Number>) =
     this.zip(amps).map { (it, amp) -> it.copy(amp = amp.toFloat()) }
 
 fun <T : Note> Sequence<T>.mute() = emptySequence<T>()

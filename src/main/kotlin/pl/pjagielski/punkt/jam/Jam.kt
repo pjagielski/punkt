@@ -187,7 +187,6 @@ class Jam(val stateProvider: StateProvider, val samples: Samples, val loops: Loo
 
     fun start(state: State) {
         playing = true
-        stateProvider.start(state)
 
         playBar(0, state, metronome.currentTime().plus(250, ChronoUnit.MILLIS))
     }

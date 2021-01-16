@@ -22,7 +22,23 @@ class ArpTest {
         val indexes = arp(0, 5, 14, ArpType.UPDOWN)
 
         assertThat(indexes)
-            .containsExactly(0, 1, 2, 3, 2, 1, 0, 1, 2, 3, 2, 1, 0, 1)
+            .containsExactly(0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1)
+    }
+
+    @Test
+    fun shouldCreateDownChordArp() {
+        val indexes = arp(Chord.I, 9, ArpType.DOWN)
+
+        assertThat(indexes)
+            .containsExactly(0, 4, 2, 0, 4, 2, 0, 4, 2)
+    }
+
+    @Test
+    fun shouldCreateUpDownChordArp() {
+        val indexes = arp(Chord.I, 9, ArpType.UPDOWN)
+
+        assertThat(indexes)
+            .containsExactly(0, 2, 4, 2, 0, 2, 4, 2, 0)
     }
 
     @Test
@@ -32,16 +48,13 @@ class ArpTest {
 
         val pats = patterns(beats = 8) {
             + scale
-                .phrase(degrees(progression.flatMap { arp(it.degrees[0], 4, 6) }), repeat(0.25))
+                .phrase(degrees(progression.flatMap { arp(it, 6) }), repeat(0.25))
                 .synth("test")
         }
 
         assertThat(pats).extracting { it.midinote }
             .containsExactly(
-                E, F.sharp(), G, A, B, E,
-                A, B, C.high(), D.high(), E.high(), A,
-                C.high(), D.high(), E.high(), F.sharp().high(), G.high(), C.high(),
-                D, E, F.sharp(), G, A, D
+                64, 67, 71, 64, 67, 71, 69, 72, 76, 69, 72, 76, 72, 76, 79, 72, 76, 79, 74, 78, 81, 74, 78, 81
             )
     }
 }

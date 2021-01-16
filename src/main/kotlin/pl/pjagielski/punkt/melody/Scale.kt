@@ -40,11 +40,11 @@ fun degrees(degs: List<Int?>) = degs.map { deg -> deg?.let { Degrees(it) } }.asS
 fun degrees(degs: Sequence<Int?>) = degs.map { deg -> deg?.let { Degrees(it) } }
 
 @JvmName("iterableListChords") fun chords(chords: Iterable<List<Int>>) = chords.map { Degrees(it) }.asSequence()
-@JvmName("iterableChords") fun chords(chords: Iterable<Chord?>) = chords.map { it?.degrees?.let(::Degrees) }.asSequence()
-@JvmName("sequenceChords") fun chords(chords: Sequence<Chord?>) = chords.map { it?.degrees?.let(::Degrees) }
+@JvmName("iterableChords") fun chords(chords: Iterable<Chord?>) = chords.map { it?.degrees()?.let(::Degrees) }.asSequence()
+@JvmName("sequenceChords") fun chords(chords: Sequence<Chord?>) = chords.map { it?.degrees()?.let(::Degrees) }
 
-fun Iterable<Chord?>.toDegrees(): Sequence<Degrees?> = this.map { it?.degrees?.let(::Degrees) }.asSequence()
-fun Sequence<Chord?>.toDegrees(): Sequence<Degrees?> = this.map { it?.degrees?.let(::Degrees) }
+fun Iterable<Chord?>.toDegrees(): Sequence<Degrees?> = this.map { it?.degrees()?.let(::Degrees) }.asSequence()
+fun Sequence<Chord?>.toDegrees(): Sequence<Degrees?> = this.map { it?.degrees()?.let(::Degrees) }
 
 class Scale(val from: Int, val intervals: Intervals) {
 

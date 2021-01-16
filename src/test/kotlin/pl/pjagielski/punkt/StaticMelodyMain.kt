@@ -8,6 +8,7 @@ import pl.pjagielski.punkt.fx.chop
 import pl.pjagielski.punkt.fx.dist
 import pl.pjagielski.punkt.fx.djf
 import pl.pjagielski.punkt.fx.waveDist
+import pl.pjagielski.punkt.jam.GlobalFX
 import pl.pjagielski.punkt.param.LFO
 import pl.pjagielski.punkt.jam.StateProvider
 import pl.pjagielski.punkt.melody.*
@@ -18,6 +19,11 @@ fun main() {
     val stateProvider = object: StateProvider {
         override fun provide(config: TrackConfig): List<Note> {
 
+            config.bpm = 100
+
+            config.tracks[0].globalFX(GlobalFX.Type.CHORUS, "level" to 0.5)
+            config.tracks[0].reverb(level = 0.75, room = 0.8, mix = 0.5)
+
             config.tracks[1].reverb(level = 0.75, room = 0.8, mix = 0.5)
             config.tracks[1].delay(level = 0.75, echo = 0.75, echotime = 4.0)
             config.tracks[1].comp(level = 0.65, dist = 0.8)
@@ -27,26 +33,27 @@ fun main() {
             config.tracks[2].comp(level = 0.65, dist = 0.7)
 
             val scale = Scale(F, major)
-            val pentatonic = Scale(F,   pentatonic)
+            val pentatonic = Scale(F, pentatonic)
 
             return patterns(beats = 8) {
                 + pentatonic.low()
                     .phrase(degrees(
-                        cycle(arp(0, 3, 12, ArpType.UPDOWN))),
-                        cycle(1.25, 0.75)
+                        cycle(arp(Chord.I, 12, ArpType.UP))),
+                        cycle(0.25, 0.5)
                     )
                     .synth("tb303")
-                    .track(1)
+                    .track(0)
                     .amp(0.1)
 
                     .params("start" to 250)
                     .params("res" to 0.15)
-                    .params("cutoff" to LFO(250, 1500, 8))
+//                    .params("cutoff" to LFO(250, 1500, 8))
 
-                    .waveDist(0.2)
+//                    .waveDist(0.2)
                     .chop(config, 2)
 
-                    .djf(LFO(0.4, 0.3, 12))
+//                    .djf(LFO(0.4, 0.3, 12))
+                    .mute()
 
                 + pentatonic.low()
                     .phrase(degrees(
@@ -60,6 +67,7 @@ fun main() {
                     .chop(config, 1)
                     .amp(cycle(0.7, 0.05, 0.7, 0.4))
                     .djf(LFO(0.4, 0.35, 8))
+                    .mute()
 
                 val progression = cycle(Chord.I)
 
@@ -70,10 +78,11 @@ fun main() {
                     )
                     .synth("lead")
                     .amp(0.2)
-                    .track(2)
-                    .waveDist(0.65)
+                    .track(0)
+//                    .waveDist(0.65)
                     .chop(config, cycle(4, 2))
                     .djf(LFO(0.25, 0.35, 8))
+//                    .mute()
             }
         }
     }

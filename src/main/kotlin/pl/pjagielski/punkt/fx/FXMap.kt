@@ -65,3 +65,13 @@ fun <T: WithFX<T>> T.chop(config: TrackConfig, chop: Number) = this.addFxN("chop
 
 @JvmName("listDistN") fun <T: WithFX<T>> List<Sequence<T>>.dist(drive: Number) = this.map { it.dist(drive) }
 @JvmName("listDistL") fun <T: WithFX<T>> List<Sequence<T>>.dist(drive: Computable) = this.map { it.dist(drive) }
+
+@JvmName("seqKrushN") fun <T: WithFX<T>> Sequence<T>.krush(bits: Number, crush: Number, amp: Number = 1.0, sus: Number = 1.0) =
+    this.map { it.addFxN("krush", "bits" to bits, "crush" to crush, "amp" to amp, "sus" to sus) }
+@JvmName("seqKrushL") fun <T: WithFX<T>> Sequence<T>.krush(bits: Computable, crush: Computable, amp: Computable = Const(1.0), sus: Computable = Const(1.0)) =
+    this.map { it.addFxC("dist", "bits" to bits, "crush" to crush, "amp" to amp, "sus" to sus) }
+
+@JvmName("listKrushN") fun <T: WithFX<T>> List<Sequence<T>>.krush(bits: Number, crush: Number, amp: Number = 1.0, sus: Number = 1.0)
+        = this.map { it.krush(bits, crush, amp, sus) }
+@JvmName("listKrushL") fun <T: WithFX<T>> List<Sequence<T>>.krush(bits: Computable, crush: Computable, amp: Computable = Const(1.0), sus: Computable = Const(1.0))
+        = this.map { it.krush(bits, crush, amp, sus) }

@@ -87,14 +87,14 @@ SynthDef(\tb303, {
     var filEnv = EnvGen.ar(Env.adsr(10e-10, dec, sus, 0.2), line);
     var waves = [Saw.ar(freq, volEnv), Pulse.ar(freq, 0.5, volEnv)];
 	sound = RLPF.ar(Select.ar(wave, waves), start + (filEnv * cutoff), res);
-	sound = (sound.clip2(0.1) * 12).distort();
+	//sound = (sound.clip2(0.1) * 12).distort();
 	ReplaceOut.ar(bus, Pan2.ar(sound) * amp);
 }).add;
 
 SynthDef(\tr808, {
-    |bus=0, dur=1, amp=1, freq=440, cutoff=1200, start=1000, release=0.3|
+    |bus=0, dur=1, amp=1, freq=440, cutoff=1200, start=1000, rel=0.3|
     var sound, filEnv, filGen;
-    var ampEnv = Env.adsr(0.01, 0.5, 0.2, release);
+    var ampEnv = Env.adsr(0.01, 0.5, 0.2, rel);
     var ampGen = EnvGen.kr(ampEnv, Line.kr(1.0, 0.0, dur/2), doneAction: 0);
     var osc1 = SinOsc.ar(freq);
 	var osc2 = Pulse.ar(freq*2);
@@ -117,7 +117,7 @@ SynthDef(\dafunk, {
     var sound = BPF.ar(osc, start + filGen, 0.5);
     sound = Pan2.ar(sound * amp, 0, envGen);
 	sound = (sound.clip2(0.007) * 24).distort();
-	sound = FreeVerb.ar(sound, mix: 0.3, room: 0.5);
+	// sound = FreeVerb.ar(sound, mix: 0.3, room: 0.5);
     ReplaceOut.ar(bus, sound);
 }).add;
 
@@ -165,6 +165,56 @@ SynthDef(\piano,{
 	var sound = MdaPiano.ar(freq+0.01, vel:amp*100, hard:0.8*amp, decay:0.1*dur,
 		tune:0.5, random:0.05, stretch:detune, muffle:0.8*muffle, stereo:stereo);
 	ReplaceOut.ar(bus, Pan2.ar(sound, pan, env))
+}).add;
+
+
+// stolen from stealthissound.scd
+
+SynthDef(\rhodes,{
+	|bus, dur=1, freq=440, amp=0.1, lforate=4.85, lfowidth=0.5, cutoff=2000, res=0.5, pan=0.0|
+
+	var pulse, filter, volEnv, filEnv, filGen;
+
+	pulse = Pulse.ar(freq*[1,33.5.midiratio],[0.2,0.1],[0.7,0.3]);
+
+    volEnv = EnvGen.ar(Env.perc(10e-10, dur), doneAction: 0);
+
+	// filEnv = Env.adsr(0.0,1.0,0.8,3.0);
+	// filGen = EnvGen.kr(filEnv, Line.kr(1.0, 0.0, dur), levelScale: cutoff);
+	filEnv = EnvGen.ar(Env.adsr(0.0,1.0,0.8,3.0),doneAction:2);
+
+	//keyboard tracking filter cutoff
+    filter = BLowPass4.ar(pulse,(cutoff*(filEnv.squared))+200+freq,res);
+
+	// filter = BLowPass4.ar(pulse, filGen + 200 + freq, res);
+
+	ReplaceOut.ar(bus, Pan2.ar(Mix(filter) * amp, pan, volEnv));
+}).add;
+
+SynthDef.new(\organs, {
+	|bus, freq=440, dur=1, amp=0.1, lforate=10, lfowidth=0.0, cutoff=100, res=0.5, pan=0.0|
+
+	var vibrato, pulse, filter, env;
+
+	vibrato = SinOsc.ar(lforate,Rand(0,2.0));
+
+	//up octave, detune by 4 cents
+	//11.96.midiratio = 1.9953843530485
+	//up octave and a half, detune up by 10 cents
+	//19.10.midiratio = 3.0139733629359
+
+	//Pulse version
+	//pulse = Mix(Pulse.ar(([1,1.9953843530485,3.0139733629359]*freq)*(1.0+(lfowidth*vibrato)),Rand(0.4,0.6)!3,[1.0,0.7,0.3]))*0.5;
+
+	//better alternative
+	pulse = Mix(VarSaw.ar(([1,1.9953843530485,3.0139733629359]*freq)*(1.0+(lfowidth*vibrato)),Rand(0.0,1.0)!3,Rand(0.3,0.5)!3,[1.0,0.7,0.3]))*0.5;
+
+	filter = RLPF.ar(pulse,cutoff,res);
+
+	env = EnvGen.ar(Env.linen(0.002, 0.996, 0.002, 1,-3), timeScale:dur, doneAction:0);
+
+	ReplaceOut.ar(bus, Pan2.ar(filter * amp, pan, env));
+
 }).add;
 
 SynthDef.new(\lpf, {
@@ -311,6 +361,21 @@ SynthDef.new(\globalCompressor, {
 	signal = (signal * dist).tanh * (level / dist.max(1));
 
 	ReplaceOut.ar(bus, signal);
+}).add;
+
+SynthDef.new(\globalChorus, {
+	|bus, level=0.0|
+	var source, chorus, signal;
+
+	source = In.ar(bus, 2);
+	chorus = Mix.fill(7, {
+		var maxdelaytime = rrand(0.005, 0.02);
+
+		DelayC.ar(source, maxdelaytime, LFNoise1.kr(Rand(4.5, 10.5), 0.25*maxdelaytime,0.75*maxdelaytime) )
+	});
+
+	XOut.ar(bus, level, chorus);
+
 }).add;
 
 )
