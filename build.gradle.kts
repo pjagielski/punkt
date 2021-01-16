@@ -3,11 +3,11 @@ val kotlinVersion: String by project
 plugins {
     `maven-publish`
     id("com.jfrog.bintray") version "1.8.4"
-    kotlin("jvm") version("1.3.70")
+    kotlin("jvm") version("1.4.10")
 }
 
 group = "pl.pjagielski"
-version = "0.3.0"
+version = "0.4.0-SNAPSHOT"
 
 repositories {
     jcenter()
@@ -29,9 +29,9 @@ dependencies {
         exclude("org.slf4j", "slf4j-log4j12")
     }
     testImplementation("org.junit.jupiter", "junit-jupiter", "5.6.0")
-    testImplementation("com.willowtreeapps.assertk", "assertk-jvm", "0.21")
+    testImplementation("com.willowtreeapps.assertk", "assertk-jvm", "0.23")
 
-    runtimeOnly("org.slf4j","slf4j-simple","1.7.29")
+    testApi("org.slf4j","slf4j-simple","1.7.29")
 }
 
 val sourcesJar by tasks.creating(Jar::class) {
