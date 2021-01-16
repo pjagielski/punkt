@@ -17,6 +17,11 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.3.3")
+    implementation("org.http4k", "http4k-core", "3.285.0")
+    implementation("org.http4k", "http4k-server-jetty", "3.285.0") {
+        exclude("org.slf4j", "slf4j-api")
+    }
+    implementation("org.http4k", "http4k-format-jackson", "3.285.0")
     api("org.jetbrains.kotlin", "kotlin-scripting-common", kotlinVersion)
     api("org.jetbrains.kotlin", "kotlin-scripting-compiler-embeddable", kotlinVersion)
     api("org.jetbrains.kotlin", "kotlin-scripting-jvm", kotlinVersion)

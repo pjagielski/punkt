@@ -3,12 +3,23 @@ package pl.pjagielski.punkt
 import com.illposed.osc.OSCMessage
 import com.uchuhimo.konf.Config
 import mu.KotlinLogging
+import org.http4k.core.*
+import org.http4k.core.Method.GET
+import org.http4k.core.Status.Companion.OK
+import org.http4k.filter.CorsPolicy
+import org.http4k.filter.ServerFilters
+import org.http4k.format.Jackson.auto
+import org.http4k.routing.bind
+import org.http4k.routing.routes
+import org.http4k.server.Jetty
+import org.http4k.server.asServer
 import pl.pjagielski.punkt.config.Configuration
 import pl.pjagielski.punkt.config.MidiConfig
 import pl.pjagielski.punkt.config.TrackConfig
 import pl.pjagielski.punkt.jam.*
 import pl.pjagielski.punkt.osc.OscServer
 import pl.pjagielski.punkt.param.emptyParamMap
+import pl.pjagielski.punkt.pattern.Note
 import pl.pjagielski.punkt.sounds.Loops
 import pl.pjagielski.punkt.sounds.Samples
 
@@ -49,6 +60,19 @@ class Application(val config: Config, val stateProvider: StateProvider) {
 
         val jam = Jam(stateProvider, samples, loops, metronome, superCollider, midiBridge)
 
+        stateProvider.start(state)
+
+        val notesLens = Body.auto<List<Note>>().toLens()
+
+        val app = routes(
+            "/notes.json" bind GET to { request: Request ->
+                val notes = stateProvider.provide(state.trackConfig)
+                val lens = notesLens(notes, request)
+                Response(OK).body(lens.body).headers(lens.headers)
+            }
+        )
+        val server = ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive).then(app).asServer(Jetty(8000)).start()
+
         Runtime.getRuntime().addShutdownHook(Thread {
             logger.info("Stopping jam...")
             jam.stop()
@@ -58,6 +82,7 @@ class Application(val config: Config, val stateProvider: StateProvider) {
             val freeTracksPkts = tracks.asList().map { track -> OSCMessage("/g_freeAll", listOf(track.group)) }
             superCollider.sendInBundle(freeTracksPkts, runAt = metronome.nextBarAt())
             logger.info("Shutting down")
+            server.stop()
         })
 
         jam.start(state)
