@@ -36,13 +36,16 @@ data class Degrees(val degrees: List<Int>) {
     constructor(vararg degrees: Int) : this(degrees.toList())
 }
 
-fun degrees(degs: List<Int?>) = degs.map { deg -> deg?.let { Degrees(it) } }.asSequence()
-fun degrees(degs: Sequence<Int?>) = degs.map { deg -> deg?.let { Degrees(it) } }
+
+fun degrees(degs: List<Int?>) = degs.map { it.toDegrees() }.asSequence()
+fun degrees(degs: Sequence<Int?>) = degs.map { it.toDegrees() }
 
 @JvmName("iterableListChords") fun chords(chords: Iterable<List<Int>>) = chords.map { Degrees(it) }.asSequence()
+@JvmName("varargChords") fun chords(vararg chords: Chord?) = chords.map { it?.degrees()?.let(::Degrees) }.asSequence()
 @JvmName("iterableChords") fun chords(chords: Iterable<Chord?>) = chords.map { it?.degrees()?.let(::Degrees) }.asSequence()
 @JvmName("sequenceChords") fun chords(chords: Sequence<Chord?>) = chords.map { it?.degrees()?.let(::Degrees) }
 
+fun Int?.toDegrees() = this?.let { Degrees(it) }
 fun Iterable<Chord?>.toDegrees(): Sequence<Degrees?> = this.map { it?.degrees()?.let(::Degrees) }.asSequence()
 fun Sequence<Chord?>.toDegrees(): Sequence<Degrees?> = this.map { it?.degrees()?.let(::Degrees) }
 
@@ -59,19 +62,21 @@ class Scale(val from: Int, val intervals: Intervals) {
         }
     }
 
-    fun phrase(degrees: Sequence<Degrees?>, durations: Sequence<Double?>, at: Double = 0.0) =
+    fun chord(chord: Chord): List<Int> = chord.degrees().map(this::note)
+
+    fun phrase(degrees: Sequence<Degrees?>, durations: Sequence<Number?>, at: Double = 0.0) =
         phrase(degrees, durations.iterator(), at)
 
-    fun phrase(degrees: Sequence<Degrees?>, durations: List<Double?>, at: Double = 0.0) =
+    fun phrase(degrees: Sequence<Degrees?>, durations: List<Number?>, at: Double = 0.0) =
         phrase(degrees, durations.iterator(), at)
 
-    private fun phrase(degrees: Sequence<Degrees?>, durIt: Iterator<Double?>, at: Double = 0.0): StepSequence {
+    private fun phrase(degrees: Sequence<Degrees?>, durIt: Iterator<Number?>, at: Double = 0.0): StepSequence {
         var current = at
         return degrees.map { deg ->
             if (!durIt.hasNext()) return@map null
             durIt.next()?.let { dur ->
-                val ret = deg?.degrees?.map { d -> Step(current, dur, note(d)) }?.asSequence()
-                current += dur
+                val ret = deg?.degrees?.map { d -> Step(current, dur.toDouble(), note(d)) }?.asSequence()
+                current += dur.toDouble()
                 ret
             } ?: sequenceOf()
         }.takeWhile { it != null }.filterNotNull().flatten()
