@@ -17,11 +17,20 @@ import pl.pjagielski.punkt.config.Configuration
 import pl.pjagielski.punkt.config.MidiConfig
 import pl.pjagielski.punkt.config.TrackConfig
 import pl.pjagielski.punkt.jam.*
+import pl.pjagielski.punkt.jam.Track
+import pl.pjagielski.punkt.midi.MidiNote
+import pl.pjagielski.punkt.midi.isOut
 import pl.pjagielski.punkt.osc.OscServer
+import pl.pjagielski.punkt.param.LFO
 import pl.pjagielski.punkt.param.emptyParamMap
+import pl.pjagielski.punkt.pattern.Loop
 import pl.pjagielski.punkt.pattern.Note
+import pl.pjagielski.punkt.pattern.Synth
+import pl.pjagielski.punkt.pattern.params
 import pl.pjagielski.punkt.sounds.Loops
 import pl.pjagielski.punkt.sounds.Samples
+import java.time.LocalDateTime
+import javax.sound.midi.*
 
 class Application(val config: Config, val stateProvider: StateProvider) {
 
@@ -54,11 +63,44 @@ class Application(val config: Config, val stateProvider: StateProvider) {
         val trackConfig = TrackConfig(bpm, beatsPerBar, metronome, tracks)
 
         val nudge = config[Configuration.OSC.MidiBridge.nudge]
-        val midiConfig = MidiConfig(nudge)
+        val midiConfig = MidiConfig(nudge, emptyList())
 
         val state = State(trackConfig, midiConfig, tracks, emptyList())
 
-        val jam = Jam(stateProvider, samples, loops, metronome, superCollider, midiBridge)
+        val player = Player(samples, loops, metronome, superCollider, midiBridge)
+        val jam = Jam(stateProvider, metronome, superCollider, player)
+
+        val midiDevices = config[Configuration.Midi.devices]
+
+        val midiDeviceInfos = MidiSystem.getMidiDeviceInfo()
+        val outDeviceMap = product(midiDevices, midiDeviceInfos.toList())
+            .filter { (name, devInfo) -> devInfo.description.contains(name) }
+            .map { (name, devInfo) -> name to MidiSystem.getMidiDevice(devInfo) }
+            .filter { (_, dev) -> dev.isOut() }
+            .toMap()
+
+        outDeviceMap.forEach { (name, dev) ->
+            logger.info("Connecting to device $name")
+            dev.transmitter.receiver = object: Receiver {
+                override fun close() {
+                    TODO("Not yet implemented")
+                }
+
+                override fun send(message: MidiMessage, time: Long) {
+                    if (message is ShortMessage) {
+                        val midinote = message.data1
+                        val velocity = message.data2
+                        logger.debug("MIDI message -> note: $midinote, velocity: $velocity, command: ${message.command}")
+                        if (message.command == ShortMessage.NOTE_ON) {
+                            val amp = (127.toDouble() / velocity.toDouble()).toFloat()
+                            val note = trackConfig.midiPlayers[name]?.invoke(MidiNote(midinote, amp))
+                            note?.let { player.playNote(0, it, LocalDateTime.now(), state) }
+                        }
+                    }
+                }
+            }
+            dev.open()
+        }
 
         stateProvider.start(state)
 
@@ -81,8 +123,10 @@ class Application(val config: Config, val stateProvider: StateProvider) {
             logger.info("Cleaning up track effect nodes...")
             val freeTracksPkts = tracks.asList().map { track -> OSCMessage("/g_freeAll", listOf(track.group)) }
             superCollider.sendInBundle(freeTracksPkts, runAt = metronome.nextBarAt())
-            logger.info("Shutting down")
+            logger.info("Shutting down server")
             server.stop()
+            logger.info("Closing midi connections")
+            outDeviceMap.forEach { (_, dev) -> dev.close() }
         })
 
         jam.start(state)
@@ -111,4 +155,8 @@ class Application(val config: Config, val stateProvider: StateProvider) {
 
 fun application(config: Config, stateProvider: StateProvider = LiveReloadingStateProvider(config)) {
     Application(config, stateProvider).run()
+}
+
+fun <T, U> product(c1: Collection<T>, c2: Collection<U>): List<Pair<T, U>> {
+    return c1.flatMap { lhsElem -> c2.map { rhsElem -> lhsElem to rhsElem } }
 }

@@ -28,4 +28,8 @@ object Configuration : ConfigSpec() {
         val bpm by optional(100)
         val beatsPerBar by optional(8)
     }
+
+    object Midi : ConfigSpec() {
+        val devices by optional(emptyList<String>())
+    }
 }
