@@ -55,7 +55,7 @@ data class Track(
         globalFX(GlobalFX.Type.DJF, "cutoff" to rate, "res" to res)
     }
 
-    fun comp(level: Number = 2, dist: Number = 2) {
+    fun comp(level: Number = 1, dist: Number = 1) {
         globalFX(GlobalFX.Type.COMP, "level" to level, "dist" to dist)
     }
 
