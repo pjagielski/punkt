@@ -1,5 +1,8 @@
 package pl.pjagielski.punkt.pattern
 
+import pl.pjagielski.punkt.melody.high
+import pl.pjagielski.punkt.melody.low
+
 data class Step(
     val beat: Double,
     val dur: Double,
@@ -15,6 +18,10 @@ data class Step(
         Loop(beat, name, beats, startBeat, amp = amp, track = track)
 
     fun toMidi(channel: Int) = MidiOut(beat, dur, channel, midinote)
+
+    fun low() = copy(midinote = midinote.low())
+    fun high() = copy(midinote = midinote.high())
+    fun rest() = null
 }
 
 typealias StepSequence = Sequence<Step>
@@ -71,6 +78,8 @@ fun <T : Any> cycle(range: Iterable<T>) : Sequence<T> {
     }
 }
 
+fun at(t: Number, dur: Number = 1.0): StepSequence = sequenceOf(Step(beat = t.toDouble(), dur = dur.toDouble()))
+
 fun <T : Any> cycle(vararg xs: T): Sequence<T> {
     var i = 0
     return generateSequence { xs[i++ % xs.size] }
@@ -79,6 +88,23 @@ fun <T : Any> cycle(vararg xs: T): Sequence<T> {
 fun <T : Any> repeat(x: T) = generateSequence { x }
 
 fun <T : Any> Sequence<T>.times(n: Int) = this.take(n).toList()
+
+fun <T> Sequence<T>.every(step: Int, func: (T) -> T?, from: Int = 0): Sequence<T> =
+    this.mapIndexed { index, t ->
+        when {
+            index < from -> t
+            (index - from) % step == 0 -> func(t)
+            else -> t
+        }
+    }.filterNotNull()
+
+fun <T> Sequence<T>.all(func: (T) -> T?, from: Int = 0): Sequence<T> =
+    this.mapIndexed { index, t ->
+        when {
+            index < from -> t
+            else -> func(t)
+        }
+    }.filterNotNull()
 
 class PatternBuilder(val beats: Int) {
 

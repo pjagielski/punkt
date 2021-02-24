@@ -14,6 +14,7 @@ class Chord(val root: Int, private val degrees: List<Int>) {
     }
 
     fun low() = Chord(root - 7, degrees)
+    fun high() = Chord(root + 7, degrees)
 
     companion object {
         val triad = listOf(0, 2, 4)

@@ -51,11 +51,13 @@ data class Loop(
 
 //fun Sequence<Synth>.namedParams(vararg params: Pair<Param, Number>) = this.params(params.map { (param, value) -> param.lowercase() to value })
 @JvmName("seqSynthParamsN") fun Sequence<Synth>.params(vararg params: Pair<String, Number>) = this.map { it.addParamsN(*params) }
-@JvmName("seqSynthParamsL") fun Sequence<Synth>.params(vararg params: Pair<String, LFO>) = this.map { it.addParamsL(*params) }
+@JvmName("seqSynthParamsL") fun Sequence<Synth>.params(vararg params: Pair<String, Computable>) = this.map { it.addParamsL(*params) }
+@JvmName("seqSynthParamsL") fun Sequence<Synth>.param(params: Pair<String, Sequence<Number>>) =
+    this.zip(params.second).map { (it, pval) -> it.addParamsN(params.first to pval) }
 
 @JvmName("listFx") fun <T : WithFX<T>> List<Sequence<T>>.fx(name: String) = this.map { it.fx(name) }
 @JvmName("listFxN") fun <T : WithFX<T>> List<Sequence<T>>.fx(name: String, vararg params: Pair<String, Number>) = this.map { it.fx(name, *params) }
-@JvmName("listFxF") fun <T : WithFX<T>> List<Sequence<T>>.fx(name: String, vararg params: Pair<String, LFO>) = this.map { it.fx(name, *params) }
+@JvmName("listFxF") fun <T : WithFX<T>> List<Sequence<T>>.fx(name: String, vararg params: Pair<String, Computable>) = this.map { it.fx(name, *params) }
 
 @JvmName("seqFx") fun <T : WithFX<T>> Sequence<T>.fx(name: String) = this.map { it.addFxN(name) }
 @JvmName("seqFxN") fun <T : WithFX<T>> Sequence<T>.fx(name: String, vararg params: Pair<String, Number>) = this.map { it.addFxN(name, *params) }

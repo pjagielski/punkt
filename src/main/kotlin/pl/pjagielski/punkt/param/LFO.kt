@@ -1,5 +1,7 @@
 package pl.pjagielski.punkt.param
 
+import kotlin.random.Random
+
 data class LFO(val min: Double, val max: Double, val length: Double = 1.0, val startBeat: Double = 0.0) : Computable {
 
     constructor(min: Number, max: Number, length: Number, startBeat: Number = 0.0) :
@@ -18,4 +20,9 @@ data class LFO(val min: Double, val max: Double, val length: Double = 1.0, val s
 
 class Const(val value: Number) : Computable {
     override fun compute(beat: Double) = value
+}
+
+class Random(val from: Number, val to: Number) : Computable {
+    val random = Random(System.currentTimeMillis())
+    override fun compute(beat: Double) = random.nextDouble(from.toDouble(), to.toDouble())
 }
