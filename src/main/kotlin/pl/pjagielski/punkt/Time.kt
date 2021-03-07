@@ -14,19 +14,19 @@ class Clock {
     }
 }
 
-class Metronome(val clock: Clock, var bpm: Int, var beatsPerBar: Int) {
+class Metronome(val clock: Clock, var bpm: Number, var beatsPerBar: Number) {
 
     private val logger = KotlinLogging.logger {}
 
     val millisPerBeat: Long
-        get() = ((60.0 / bpm) * 1000).toLong()
+        get() = ((60.0 / bpm.toDouble()) * 1000).toLong()
 
     val millisPerBar: Long
-        get() = millisPerBeat * beatsPerBar
+        get() = (millisPerBeat.toDouble() * beatsPerBar.toDouble()).toLong()
 
     fun currentBar() = Math.floorDiv(Duration.between(clock.startAt, clock.currentTime().plus(200, ChronoUnit.MILLIS)).toMillis(), millisPerBar)
 
-    fun currentBeat(bar: Int, beat: Double) = (bar * beatsPerBar) + beat
+    fun currentBeat(bar: Int, beat: Double) = (bar.toDouble() * beatsPerBar.toDouble()) + beat
 
     fun nextBarAt(): LocalDateTime {
         val currentBar = currentBar()

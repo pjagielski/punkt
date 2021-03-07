@@ -39,8 +39,8 @@ data class Track(
         }
     }
 
-    fun reverb(level: Number, room: Number, mix: Number) {
-        globalFX(GlobalFX.Type.REVERB, "level" to level, "room" to room, "mix" to mix)
+    fun reverb(level: Number, drywet: Number, damp: Number) {
+        globalFX(GlobalFX.Type.REVERB, "level" to level, "drywet" to drywet, "damp" to damp)
     }
 
     fun delay(level: Number, echo: Number, echotime: Number = 2.0) {
@@ -59,8 +59,8 @@ data class Track(
         globalFX(GlobalFX.Type.COMP, "level" to level, "dist" to dist)
     }
 
-    fun chorus(level: Number = 0.9) {
-        globalFX(GlobalFX.Type.CHORUS, "level" to level)
+    fun chorus(bright: Number = 0.0, pos: Number = 0.0) {
+        globalFX(GlobalFX.Type.CHORUS, "bright" to bright, "pos" to pos)
     }
 }
 
