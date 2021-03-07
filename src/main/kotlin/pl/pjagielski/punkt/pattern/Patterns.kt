@@ -66,7 +66,7 @@ fun StepSequence.loop(name: String, beats: Number, startBeat: Number = 0.0f, amp
 
 fun StepSequence.midi(channel: Int) = this.map { it.toMidi(channel) }
 
-fun <T : Note> Sequence<T>.beats(beats: Int) = takeWhile { it.beat < beats }.toList()
+fun <T : Note> Sequence<T>.beats(beats: Number) = takeWhile { it.beat < beats.toDouble() }.toList()
 
 fun <T : Any> cycle(range: Iterable<T>) : Sequence<T> {
     var iter = range.iterator()
@@ -106,7 +106,7 @@ fun <T> Sequence<T>.all(func: (T) -> T?, from: Int = 0): Sequence<T> =
         }
     }.filterNotNull()
 
-class PatternBuilder(val beats: Int) {
+class PatternBuilder(val beats: Number) {
 
     private val sequences = mutableListOf<Sequence<Note>>()
 
@@ -124,7 +124,7 @@ class PatternBuilder(val beats: Int) {
             compareBy(Note::beat, { it.midinote ?: 0 }))
 }
 
-fun patterns(beats: Int, body: PatternBuilder.() -> Unit): List<Note> {
+fun patterns(beats: Number, body: PatternBuilder.() -> Unit): List<Note> {
     val builder = PatternBuilder(beats)
     body.invoke(builder)
     return builder.build()

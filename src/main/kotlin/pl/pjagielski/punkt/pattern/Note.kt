@@ -47,6 +47,8 @@ data class Loop(
             : this(beat, name, beats.toFloat(), startBeat.toFloat(), amp.toFloat())
 
     override fun addFx(name: String, vararg params: Pair<String, Value>) = copy(fxs = fxs.withFX(name, *params))
+
+    fun startBeat(startBeat: Number) = copy(startBeat = startBeat.toFloat())
 }
 
 //fun Sequence<Synth>.namedParams(vararg params: Pair<Param, Number>) = this.params(params.map { (param, value) -> param.lowercase() to value })

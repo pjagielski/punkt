@@ -4,8 +4,11 @@ import assertk.assertThat
 import assertk.assertions.containsExactly
 import assertk.assertions.extracting
 import org.junit.jupiter.api.Test
-import pl.pjagielski.punkt.melody.*
+import pl.pjagielski.punkt.melody.Chord
+import pl.pjagielski.punkt.melody.E
 import pl.pjagielski.punkt.melody.Intervals.minor
+import pl.pjagielski.punkt.melody.Scale
+import pl.pjagielski.punkt.melody.degrees
 
 class ArpTest {
 
@@ -56,5 +59,16 @@ class ArpTest {
             .containsExactly(
                 64, 67, 71, 64, 67, 71, 69, 72, 76, 69, 72, 76, 72, 76, 79, 72, 76, 79, 74, 78, 81, 74, 78, 81
             )
+    }
+
+    @Test
+    fun shouldCreateArpWithOctaveLowEveryNthBeat() {
+        val result = cycle(arp(listOf(1, 2, 3), 4))
+            .every(5, { it - 7 })
+            .take(12)
+            .toList()
+
+        assertThat(result)
+            .containsExactly(-6, 2, 3, 1, 1, -5, 3, 1, 1, 2, -4, 1)
     }
 }
