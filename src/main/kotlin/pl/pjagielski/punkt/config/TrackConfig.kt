@@ -6,7 +6,7 @@ import pl.pjagielski.punkt.midi.MidiPlayers
 
 data class TrackConfig(
     var bpm: Int,
-    var beatsPerBar: Int,
+    var beatsPerBar: Number,
     val metronome: Metronome,
     val tracks: Tracks,
     val midiPlayers: MidiPlayers = MidiPlayers.empty()

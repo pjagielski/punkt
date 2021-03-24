@@ -26,7 +26,7 @@ class Metronome(val clock: Clock, var bpm: Number, var beatsPerBar: Number) {
 
     fun currentBar() = Math.floorDiv(Duration.between(clock.startAt, clock.currentTime().plus(200, ChronoUnit.MILLIS)).toMillis(), millisPerBar)
 
-    fun currentBeat(bar: Int, beat: Double) = (bar.toDouble() * beatsPerBar.toDouble()) + beat
+    fun currentBeat(bar: Int, beat: Double) = (bar * beatsPerBar.toDouble()) + beat
 
     fun nextBarAt(): LocalDateTime {
         val currentBar = currentBar()

@@ -49,7 +49,7 @@ class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superC
         setEffects(state, at, bar)
         playNotes(state, at, bar)
 
-        val nextBarAt = at.plus(beatsPerBar * millisPerBeat, ChronoUnit.MILLIS)
+        val nextBarAt = at.plus((beatsPerBar.toDouble() * millisPerBeat.toDouble()).toLong(), ChronoUnit.MILLIS)
 
         schedule(nextBarAt.minus(200, ChronoUnit.MILLIS)) {
             playBar(bar + 1, state, nextBarAt)
