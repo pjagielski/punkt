@@ -11,8 +11,12 @@ import org.http4k.filter.ServerFilters
 import org.http4k.format.Jackson.auto
 import org.http4k.routing.bind
 import org.http4k.routing.routes
+import org.http4k.routing.websockets
 import org.http4k.server.Jetty
 import org.http4k.server.asServer
+import org.http4k.websocket.PolyHandler
+import org.http4k.websocket.Websocket
+import org.http4k.websocket.WsMessage
 import pl.pjagielski.punkt.config.Configuration
 import pl.pjagielski.punkt.config.MidiConfig
 import pl.pjagielski.punkt.config.TrackConfig
@@ -21,14 +25,11 @@ import pl.pjagielski.punkt.jam.Track
 import pl.pjagielski.punkt.midi.MidiNote
 import pl.pjagielski.punkt.midi.isOut
 import pl.pjagielski.punkt.osc.OscServer
-import pl.pjagielski.punkt.param.LFO
 import pl.pjagielski.punkt.param.emptyParamMap
-import pl.pjagielski.punkt.pattern.Loop
 import pl.pjagielski.punkt.pattern.Note
-import pl.pjagielski.punkt.pattern.Synth
-import pl.pjagielski.punkt.pattern.params
 import pl.pjagielski.punkt.sounds.Loops
 import pl.pjagielski.punkt.sounds.Samples
+import java.time.Duration
 import java.time.LocalDateTime
 import javax.sound.midi.*
 
@@ -55,8 +56,7 @@ class Application(val config: Config, val stateProvider: StateProvider) {
 
         val bpm = config[Configuration.Track.bpm]
         val beatsPerBar = config[Configuration.Track.beatsPerBar]
-        val clock = Clock().apply { start() }
-        val metronome = Metronome(clock, bpm, beatsPerBar)
+        val metronome = Metronome(bpm, beatsPerBar)
 
         val trackCount = config[Configuration.Track.tracks]
         val tracks = (0..trackCount).map { idx -> idx to createTrack(idx, superCollider) }.toMap().let(::Tracks)
@@ -104,7 +104,26 @@ class Application(val config: Config, val stateProvider: StateProvider) {
 
         stateProvider.start(state)
 
+        val ticker = Ticker(metronome, step = 0.25)
+
         val notesLens = Body.auto<List<Note>>().toLens()
+        val notesWsLens = WsMessage.auto<List<Note>>().toLens()
+        val tickWsLens = WsMessage.auto<TickData>().toLens()
+
+        val ws = websockets(
+            "/notes" bind { ws: Websocket ->
+                logger.info("Websocket opened")
+                stateProvider.onChanged = { notes ->
+                    logger.info("Sending notes")
+                    ws.send(notesWsLens(notes))
+                }
+            },
+            "/tick" bind { ws: Websocket ->
+                ticker.callback = { data ->
+                    ws.send(tickWsLens(data))
+                }
+            }
+        )
 
         val app = routes(
             "/notes.json" bind GET to { request: Request ->
@@ -113,7 +132,9 @@ class Application(val config: Config, val stateProvider: StateProvider) {
                 Response(OK).body(lens.body).headers(lens.headers)
             }
         )
-        val server = ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive).then(app).asServer(Jetty(8000)).start()
+
+        val cors = ServerFilters.Cors(CorsPolicy.UnsafeGlobalPermissive)
+        val server = PolyHandler(cors.then(app), ws).asServer(Jetty(8000)).start()
 
         Runtime.getRuntime().addShutdownHook(Thread {
             logger.info("Stopping jam...")
@@ -127,14 +148,16 @@ class Application(val config: Config, val stateProvider: StateProvider) {
             server.stop()
             logger.info("Closing midi connections")
             outDeviceMap.forEach { (_, dev) -> dev.close() }
+            ticker.stop()
         })
 
         jam.start(state)
+        ticker.start()
 
         Thread.currentThread().join()
     }
 
-    fun createTrack(idx: Int, superCollider: OscServer): Track {
+    private fun createTrack(idx: Int, superCollider: OscServer): Track {
         val busId = superCollider.oscMeta.nextTrackBusId()
         val groupId = superCollider.oscMeta.nextNodeId()
         val globalFXList = mutableListOf<GlobalFX>()

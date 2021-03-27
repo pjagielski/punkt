@@ -10,21 +10,26 @@ import pl.pjagielski.punkt.pattern.Note
 import java.io.File
 import kotlin.script.experimental.jvmhost.BasicJvmScriptingHost
 
-interface StateProvider {
-    fun provide(config: TrackConfig): List<Note>
+typealias Notes = List<Note>
+typealias StateCallback = (Notes) -> Unit
 
-    fun start(state: State) {}
+abstract class StateProvider {
+    abstract fun provide(config: TrackConfig): Notes
+
+    open fun start(state: State) {}
+
+    var onChanged: StateCallback? = null
 }
 
-class LiveReloadingStateProvider(val config: Config) : StateProvider {
+class LiveReloadingStateProvider(val config: Config) : StateProvider() {
 
     private val scriptingHost = BasicJvmScriptingHost()
 
     private val logger = KotlinLogging.logger {}
 
-    private lateinit var notes: List<Note>
+    private lateinit var notes: Notes
 
-    override fun provide(config: TrackConfig): List<Note> {
+    override fun provide(config: TrackConfig): Notes {
         return notes
     }
 
@@ -32,13 +37,14 @@ class LiveReloadingStateProvider(val config: Config) : StateProvider {
         val liveFile = config[Configuration.Locations.liveFile]
 
         val reloadState = watchFile(File(liveFile)) { file ->
-                val start = System.currentTimeMillis()
-                logger.info("Reloading file...")
-                val func = loadFromScriptKSH<(TrackConfig) -> List<Note>>(file, scriptingHost)
-                val stop = System.currentTimeMillis()
-                logger.info("Reloading took ${stop - start}ms")
-                notes = func.invoke(state.trackConfig)
-            }
+            val start = System.currentTimeMillis()
+            logger.info("Reloading file...")
+            val func = loadFromScriptKSH<(TrackConfig) -> List<Note>>(file, scriptingHost)
+            val stop = System.currentTimeMillis()
+            logger.info("Reloading took ${stop - start}ms")
+            notes = func.invoke(state.trackConfig)
+            onChanged?.invoke(notes)
+        }
 
         reloadState.invoke()
     }
