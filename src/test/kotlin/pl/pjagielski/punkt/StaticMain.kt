@@ -8,7 +8,7 @@ import pl.pjagielski.punkt.jam.StateProvider
 import pl.pjagielski.punkt.pattern.*
 
 fun main() {
-    val stateProvider = object: StateProvider {
+    val stateProvider = object: StateProvider() {
         override fun provide(config: TrackConfig): List<Note> {
             config.tracks[0].reverb(level = 0.0, drywet = 0.000001, damp = 0.00001)
 //            config.tracks[0].globalFX(CHORUS, "level" to 0.5)

@@ -15,7 +15,7 @@ import pl.pjagielski.punkt.melody.Intervals.*
 import pl.pjagielski.punkt.pattern.*
 
 fun main() {
-    val stateProvider = object: StateProvider {
+    val stateProvider = object: StateProvider() {
         override fun provide(config: TrackConfig): List<Note> {
 
             config.bpm = 100

@@ -99,6 +99,7 @@ class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superC
 
     fun start(state: State) {
         playing = true
+        metronome.start()
 
         playBar(0, state, metronome.currentTime().plus(250, ChronoUnit.MILLIS))
     }
