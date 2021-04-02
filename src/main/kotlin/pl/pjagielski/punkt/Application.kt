@@ -104,7 +104,7 @@ class Application(val config: Config, val stateProvider: StateProvider) {
 
         stateProvider.start(state)
 
-        val ticker = Ticker(metronome, step = 0.25)
+        val ticker = Ticker(metronome, trackConfig)
 
         val notesLens = Body.auto<List<Note>>().toLens()
         val notesWsLens = WsMessage.auto<List<Note>>().toLens()
@@ -113,7 +113,7 @@ class Application(val config: Config, val stateProvider: StateProvider) {
         val ws = websockets(
             "/notes" bind { ws: Websocket ->
                 logger.info("Websocket opened")
-                stateProvider.onChanged = { notes ->
+                stateProvider.onChanged = { notes, trackConfig ->
                     logger.info("Sending notes")
                     ws.send(notesWsLens(notes))
                 }
