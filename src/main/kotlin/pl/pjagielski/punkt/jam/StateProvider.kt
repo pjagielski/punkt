@@ -11,7 +11,7 @@ import java.io.File
 import kotlin.script.experimental.jvmhost.BasicJvmScriptingHost
 
 typealias Notes = List<Note>
-typealias StateCallback = (Notes) -> Unit
+typealias StateCallback = (Notes, TrackConfig) -> Unit
 
 abstract class StateProvider {
     abstract fun provide(config: TrackConfig): Notes
@@ -43,7 +43,7 @@ class LiveReloadingStateProvider(val config: Config) : StateProvider() {
             val stop = System.currentTimeMillis()
             logger.info("Reloading took ${stop - start}ms")
             notes = func.invoke(state.trackConfig)
-            onChanged?.invoke(notes)
+            onChanged?.invoke(notes, state.trackConfig)
         }
 
         reloadState.invoke()
