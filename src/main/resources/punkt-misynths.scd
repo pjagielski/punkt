@@ -7,9 +7,9 @@ SynthDef(\plaits,
 }).add;
 
 SynthDef.new(\globalReverb, {
-	|bus, drywet = 0.000001, damp = 0.000001|
+	|bus, drywet = 0.000001, damp = 0.000001, hp = 0.05, diff = 0.625|
 	var sound = In.ar(bus, 2);
-	var verb = MiVerb.ar(sound, drywet: drywet, damp: damp);
+	var verb = MiVerb.ar(sound, drywet: drywet, damp: damp, hp: hp, diff: diff);
 	ReplaceOut.ar(bus, verb);
 }).add;
 
