@@ -23,6 +23,7 @@ import pl.pjagielski.punkt.config.TrackConfig
 import pl.pjagielski.punkt.jam.*
 import pl.pjagielski.punkt.jam.Track
 import pl.pjagielski.punkt.midi.MidiNote
+import pl.pjagielski.punkt.midi.MidiState
 import pl.pjagielski.punkt.midi.isOut
 import pl.pjagielski.punkt.osc.OscServer
 import pl.pjagielski.punkt.param.emptyParamMap
@@ -65,9 +66,9 @@ class Application(val config: Config, val stateProvider: StateProvider) {
         val nudge = config[Configuration.OSC.MidiBridge.nudge]
         val midiConfig = MidiConfig(nudge, emptyList())
 
-        val state = State(trackConfig, midiConfig, tracks, emptyList())
+        val state = State(trackConfig, midiConfig, MidiState(), tracks, emptyList())
 
-        val player = Player(samples, loops, metronome, superCollider, midiBridge)
+        val player = Player(samples, loops, state, metronome, superCollider, midiBridge)
         val jam = Jam(stateProvider, metronome, superCollider, player)
 
         val midiDevices = config[Configuration.Midi.devices]
@@ -88,13 +89,18 @@ class Application(val config: Config, val stateProvider: StateProvider) {
 
                 override fun send(message: MidiMessage, time: Long) {
                     if (message is ShortMessage) {
-                        val midinote = message.data1
-                        val velocity = message.data2
-                        logger.debug("MIDI message -> note: $midinote, velocity: $velocity, command: ${message.command}")
                         if (message.command == ShortMessage.NOTE_ON) {
-                            val amp = (127.toDouble() / velocity.toDouble()).toFloat()
+                            val midinote = message.data1
+                            val velocity = message.data2
+                            logger.debug("MIDI NOTE_ON -> note: $midinote, velocity: $velocity")
+                            val amp = (velocity.toDouble() / 127.toDouble()).toFloat()
                             val note = trackConfig.midiPlayers[name]?.invoke(MidiNote(midinote, amp))
                             note?.let { player.playNote(0, it, LocalDateTime.now(), state) }
+                        } else if (message.command == ShortMessage.CONTROL_CHANGE) {
+                            val ch = message.channel
+                            val value = message.data2.toDouble() / 127.toDouble()
+                            logger.info("MIDI CC -> channel: $ch, data2: ${message.data2}, value: $value")
+                            state.midiState[ch] = value
                         }
                     }
                 }
