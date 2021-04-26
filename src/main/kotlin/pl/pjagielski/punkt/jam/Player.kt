@@ -8,14 +8,12 @@ import pl.pjagielski.punkt.fx.WithFX
 import pl.pjagielski.punkt.osc.Group
 import pl.pjagielski.punkt.osc.OscServer
 import pl.pjagielski.punkt.osc.Position
-import pl.pjagielski.punkt.param.ParamMap
-import pl.pjagielski.punkt.param.Value
 import pl.pjagielski.punkt.pattern.*
 import pl.pjagielski.punkt.sounds.Loops
 import pl.pjagielski.punkt.sounds.Samples
 import java.time.LocalDateTime
 
-class Player(val samples: Samples, val loops: Loops,
+class Player(val samples: Samples, val loops: Loops, val state: State,
              val metronome: Metronome, val superCollider: OscServer, val midiBridge: OscServer) {
 
     private val logger = KotlinLogging.logger {}
@@ -32,7 +30,7 @@ class Player(val samples: Samples, val loops: Loops,
                 val freq = midiToHz(note.midinote)
                 val dur = note.duration.toFloat()
                 val params = listOf("freq", freq, "amp", note.amp, "dur", dur)
-                val synthParams = note.params.compute(currentBeat).flatMap { it.toList() }
+                val synthParams = note.params.compute(state, currentBeat).flatMap { it.toList() }
                 logger.info("beat $currentBeat, synth ${note.name}, note ${note.midinote}, params $synthParams")
 
                 sendInGroup(note, track.bus, dur, currentBeat, playAt) {
@@ -76,7 +74,7 @@ class Player(val samples: Samples, val loops: Loops,
         val packets = superCollider.group {
             builder()
             item.fxs.forEach { (fxName, fx) ->
-                val args = fx.params.compute(currentBeat).flatMap { it.toList() }
+                val args = fx.params.compute(state, currentBeat).flatMap { it.toList() }
                 logger.debug("beat $currentBeat, fx $fxName, params $args")
                 node(fxName, position = Position.TAIL, params = args)
             }

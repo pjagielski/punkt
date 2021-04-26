@@ -8,6 +8,7 @@ import mu.KotlinLogging
 import pl.pjagielski.punkt.Metronome
 import pl.pjagielski.punkt.config.MidiConfig
 import pl.pjagielski.punkt.config.TrackConfig
+import pl.pjagielski.punkt.midi.MidiState
 import pl.pjagielski.punkt.osc.OscServer
 import pl.pjagielski.punkt.pattern.Note
 import pl.pjagielski.punkt.pattern.step
@@ -19,6 +20,7 @@ import kotlin.math.pow
 data class State(
     val trackConfig: TrackConfig,
     val midiConfig: MidiConfig,
+    val midiState: MidiState,
     val tracks: Tracks,
     var notes: List<Note>
 )
@@ -68,7 +70,7 @@ class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superC
         schedule(setAt.minus(150, ChronoUnit.MILLIS)) {
             state.tracks.asList().forEach { track ->
                 track.globalFXs.asList().forEach { globalFx ->
-                    val args = globalFx.params.compute(currentBeat).flatMap { it.toList() }
+                    val args = globalFx.params.compute(state, currentBeat).flatMap { it.toList() }
                     if (args.isNotEmpty()) {
                         logger.debug("beat $currentBeat, fx ${globalFx.type.name}, params $args")
                     }
