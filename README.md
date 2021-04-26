@@ -1,5 +1,5 @@
 # PunKt - Kotlin Punk
-![Bintray](https://img.shields.io/bintray/v/punkt/punkt/punkt)
+[![](https://jitpack.io/v/pjagielski/punkt.svg)](https://jitpack.io/#pjagielski/punkt)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/pjagielski/punkt/CI)
 
 A live coding music library/environment for Kotlin. For software developers who want to dive into live coding music.
