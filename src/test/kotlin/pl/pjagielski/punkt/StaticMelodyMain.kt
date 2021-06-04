@@ -20,14 +20,13 @@ fun main() {
 
             config.bpm = 100
 
-//            config.tracks[0].globalFX(GlobalFX.Type.CHORUS, "level" to 0.5)
-            config.tracks[0].reverb(level = 0.75, drywet = 0.8, damp = 0.5)
+            config.tracks[0].reverb(level = 0.75, room = 0.8, mix = 0.5)
 
-            config.tracks[1].reverb(level = 0.75, drywet = 0.8, damp = 0.5)
+            config.tracks[1].reverb(level = 0.75, room = 0.8, mix = 0.5)
             config.tracks[1].delay(level = 0.75, echo = 0.75, echotime = 4.0)
             config.tracks[1].comp(level = 0.65, dist = 0.8)
 
-            config.tracks[2].reverb(level = 0.75, drywet = 2.0, damp = 0.8)
+            config.tracks[2].reverb(level = 0.75, room = 2.0, mix = 0.8)
             config.tracks[2].delay(level = 0.75, echo = 0.75, echotime = 8.0)
             config.tracks[2].comp(level = 0.65, dist = 0.7)
 
@@ -81,22 +80,7 @@ fun main() {
 //                    .waveDist(0.65)
                     .chop(config, cycle(4, 2))
                     .djf(LFO(0.25, 0.35, 8))
-                    .mute()
-
-                fun Sequence<Step>.supersaw() = this.synth("plaits")
-                    .params("engine" to 8)
-                    .params("harm" to 0.18)
-                    .params("timbre" to 0.5)
-                    .params("morph" to 0.8)
-                    .params("mul" to 0.3, "sus" to 0.9, "atk" to 0.1)
-
-                + Scale(C.sharp(), minor)//.low()
-                    .phrase(
-                        degrees(listOf(0,-4,-2,-1).flatMap { listOf(it,it,it) }),
-                        cycle(0.75, 0.75, 0.5)
-                    )
-                    .supersaw()
-                    .amp(0.2)
+//                    .mute()
             }
         }
     }

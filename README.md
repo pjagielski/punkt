@@ -1,5 +1,5 @@
 # PunKt - Kotlin Punk
-![Bintray](https://img.shields.io/bintray/v/punkt/punkt/punkt)
+[![](https://jitpack.io/v/pjagielski/punkt.svg)](https://jitpack.io/#pjagielski/punkt)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/pjagielski/punkt/CI)
 
 A live coding music library/environment for Kotlin. For software developers who want to dive into live coding music.
@@ -143,7 +143,7 @@ TB-303 pentatonic arpeggio with LFO
 
 ### Changelog
 
-### 0.3.0 - 09.09.2020
+#### 0.3.0 - 09.09.2020
 * introduced separate tracks with global effects
 * new global effects: `reverb`, `delay`, `djf`
 * new effects: `djf`, `waveDist`, `squiz`
