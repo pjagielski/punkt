@@ -7,11 +7,11 @@ import pl.pjagielski.punkt.config.TrackConfig
 import pl.pjagielski.punkt.fx.chop
 import pl.pjagielski.punkt.fx.dist
 import pl.pjagielski.punkt.fx.djf
-import pl.pjagielski.punkt.jam.GlobalFX
-import pl.pjagielski.punkt.param.LFO
 import pl.pjagielski.punkt.jam.StateProvider
 import pl.pjagielski.punkt.melody.*
-import pl.pjagielski.punkt.melody.Intervals.*
+import pl.pjagielski.punkt.melody.Intervals.major
+import pl.pjagielski.punkt.melody.Intervals.pentatonic
+import pl.pjagielski.punkt.param.LFO
 import pl.pjagielski.punkt.pattern.*
 
 fun main() {
@@ -20,13 +20,9 @@ fun main() {
 
             config.bpm = 100
 
-            config.tracks[0].reverb(level = 0.75, room = 0.8, mix = 0.5)
-
-            config.tracks[1].reverb(level = 0.75, room = 0.8, mix = 0.5)
             config.tracks[1].delay(level = 0.75, echo = 0.75, echotime = 4.0)
             config.tracks[1].comp(level = 0.65, dist = 0.8)
 
-            config.tracks[2].reverb(level = 0.75, room = 2.0, mix = 0.8)
             config.tracks[2].delay(level = 0.75, echo = 0.75, echotime = 8.0)
             config.tracks[2].comp(level = 0.65, dist = 0.7)
 
