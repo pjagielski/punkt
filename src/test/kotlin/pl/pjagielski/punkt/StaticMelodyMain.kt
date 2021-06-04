@@ -7,7 +7,6 @@ import pl.pjagielski.punkt.config.TrackConfig
 import pl.pjagielski.punkt.fx.chop
 import pl.pjagielski.punkt.fx.dist
 import pl.pjagielski.punkt.fx.djf
-import pl.pjagielski.punkt.fx.waveDist
 import pl.pjagielski.punkt.jam.GlobalFX
 import pl.pjagielski.punkt.param.LFO
 import pl.pjagielski.punkt.jam.StateProvider
@@ -21,7 +20,6 @@ fun main() {
 
             config.bpm = 100
 
-            config.tracks[0].globalFX(GlobalFX.Type.CHORUS, "level" to 0.5)
             config.tracks[0].reverb(level = 0.75, room = 0.8, mix = 0.5)
 
             config.tracks[1].reverb(level = 0.75, room = 0.8, mix = 0.5)

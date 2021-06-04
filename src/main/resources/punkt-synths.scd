@@ -67,13 +67,13 @@ SynthDef(\plucklead, {
 }).add;
 
 SynthDef(\lead, {
-    |bus=0, dur=1, amp=1, freq=440, cutoff=5000, start=2000, sus=0.4, rel=0.8|
+    |bus=0, dur=1, amp=1, freq=440, cutoff=5000, start=6000, sus=0.4, rel=0.8|
     var sound;
-    var voices = 11;
+    var voices = 15;
     var env = Env.adsr(0.1, 0.5, sus, rel);
     var envGen = EnvGen.ar(env, Line.kr(1.0, 0.0, dur), doneAction:0);
-    var freqs = {Rand(-2,2)*2**(freq/1200)}.dup(voices);
-    var phases = Array.fill(voices, { 1.2.rand2 });
+    var freqs = {Rand(-1,1)*2**(freq/2200)}.dup(voices);
+    var phases = Array.fill(voices, { 1.0.rand2 });
     sound =  LFSaw.ar(freq + freqs, phases);
     sound = LPF.ar(sound, start + cutoff);
 	ReplaceOut.ar(bus, Splay.ar(sound * amp, 0.5) * envGen);

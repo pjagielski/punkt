@@ -30,9 +30,10 @@ import pl.pjagielski.punkt.param.emptyParamMap
 import pl.pjagielski.punkt.pattern.Note
 import pl.pjagielski.punkt.sounds.Loops
 import pl.pjagielski.punkt.sounds.Samples
-import java.time.Duration
 import java.time.LocalDateTime
+import java.util.*
 import javax.sound.midi.*
+import kotlin.collections.LinkedHashSet
 
 class Application(val config: Config, val stateProvider: StateProvider) {
 
@@ -84,7 +85,7 @@ class Application(val config: Config, val stateProvider: StateProvider) {
             logger.info("Connecting to device $name")
             dev.transmitter.receiver = object: Receiver {
                 override fun close() {
-                    TODO("Not yet implemented")
+                    logger.info("Disconnected device $name")
                 }
 
                 override fun send(message: MidiMessage, time: Long) {
@@ -116,12 +117,14 @@ class Application(val config: Config, val stateProvider: StateProvider) {
         val notesWsLens = WsMessage.auto<List<Note>>().toLens()
         val tickWsLens = WsMessage.auto<TickData>().toLens()
 
+        val notesWebsockets = Collections.synchronizedSet<Websocket>(LinkedHashSet())
         val ws = websockets(
             "/notes" bind { ws: Websocket ->
-                logger.info("Websocket opened")
-                stateProvider.onChanged = { notes, trackConfig ->
-                    logger.info("Sending notes")
-                    ws.send(notesWsLens(notes))
+                logger.info("Notes WS opened")
+                notesWebsockets.add(ws)
+                ws.onClose {
+                    logger.info("Notes WS closed")
+                    notesWebsockets.remove(ws)
                 }
             },
             "/tick" bind { ws: Websocket ->
@@ -130,6 +133,12 @@ class Application(val config: Config, val stateProvider: StateProvider) {
                 }
             }
         )
+        stateProvider.onChanged = { notes, _ ->
+            logger.info("Sending notes, connections: $notesWebsockets")
+            notesWebsockets.forEach {
+                it.send(notesWsLens(notes))
+            }
+        }
 
         val app = routes(
             "/notes.json" bind GET to { request: Request ->
@@ -148,8 +157,8 @@ class Application(val config: Config, val stateProvider: StateProvider) {
             Thread.sleep(metronome.millisToNextBar() + 250)
 
             logger.info("Cleaning up track effect nodes...")
-            val freeTracksPkts = tracks.asList().map { track -> OSCMessage("/g_freeAll", listOf(track.group)) }
-            superCollider.sendInBundle(freeTracksPkts, runAt = metronome.nextBarAt())
+            val freeTracksMsgs = tracks.asList().map { track -> OSCMessage("/g_freeAll", listOf(track.group)) }
+            superCollider.sendInBundle(freeTracksMsgs, runAt = metronome.nextBarAt())
             logger.info("Shutting down server")
             server.stop()
             logger.info("Closing midi connections")

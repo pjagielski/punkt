@@ -41,7 +41,7 @@ class Player(val samples: Samples, val loops: Loops, val state: State,
                 val buffer = samples[note.name] ?: return
                 val player = "play${buffer.channels}"
 
-                logger.info("beat $currentBeat, sample ${note.name}")
+                logger.debug("beat $currentBeat, sample ${note.name}")
 
                 sendInGroup(note, track.bus, buffer.length, currentBeat, playAt) {
                     node(player, position = Position.HEAD, params = listOf("buf", buffer.bufNum, "amp", note.amp))
@@ -49,7 +49,7 @@ class Player(val samples: Samples, val loops: Loops, val state: State,
             }
             is Loop -> {
                 val buffer = loops[note.name] ?: return
-                logger.info("beat $currentBeat, loop ${note.name}, length ${buffer.length}")
+                logger.debug("beat $currentBeat, loop ${note.name}, length ${buffer.length}")
 
                 sendInGroup(note, track.bus, buffer.length, currentBeat, playAt) {
                     node("sampler", position = Position.HEAD, params = listOf(
