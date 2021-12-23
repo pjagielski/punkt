@@ -98,11 +98,27 @@ fun <T> Sequence<T>.every(step: Int, func: (T) -> T?, from: Int = 0): Sequence<T
         }
     }.filterNotNull()
 
+fun <T> Sequence<T>.every(step: Int, func: (T) -> T?, range: IntRange): Sequence<T> =
+    this.mapIndexed { index, t ->
+        when {
+            range.contains(index % step) -> func(t)
+            else -> t
+        }
+    }.filterNotNull()
+
 fun <T> Sequence<T>.all(func: (T) -> T?, from: Int = 0): Sequence<T> =
     this.mapIndexed { index, t ->
         when {
             index < from -> t
             else -> func(t)
+        }
+    }.filterNotNull()
+
+fun <T> Sequence<T>.all(func: (T) -> T?, range: IntRange): Sequence<T> =
+    this.mapIndexed { index, t ->
+        when {
+            range.contains(index) -> func(t)
+            else -> t
         }
     }.filterNotNull()
 

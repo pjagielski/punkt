@@ -5,10 +5,13 @@ import com.uchuhimo.konf.Config
 import mu.KotlinLogging
 import org.http4k.core.*
 import org.http4k.core.Method.GET
+import org.http4k.core.Method.POST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.filter.CorsPolicy
 import org.http4k.filter.ServerFilters
 import org.http4k.format.Jackson.auto
+import org.http4k.format.Jackson.json
+import org.http4k.format.Jackson.asJsonValue
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.routing.websockets
@@ -145,6 +148,19 @@ class Application(val config: Config, val stateProvider: StateProvider) {
                 val notes = stateProvider.provide(state.trackConfig)
                 val lens = notesLens(notes, request)
                 Response(OK).body(lens.body).headers(lens.headers)
+            },
+            "/start" bind POST to {
+                jam.start(state)
+                Response(OK)
+            },
+            "/stop" bind POST to {
+                jam.stop()
+                Response(OK)
+            },
+            "/playing" bind GET to {
+                Response(OK).with(
+                    Body.json().toLens() of jam.playing.asJsonValue()
+                )
             }
         )
 
@@ -176,7 +192,7 @@ class Application(val config: Config, val stateProvider: StateProvider) {
         val busId = superCollider.oscMeta.nextTrackBusId()
         val groupId = superCollider.oscMeta.nextNodeId()
         val globalFXList = mutableListOf<GlobalFX>()
-        val trackGroupPkts = superCollider.group(bid = busId, gid = groupId) {
+        val trackGroupMsgs = superCollider.group(bid = busId, gid = groupId) {
             GlobalFX.Type.values().forEach { fxType ->
                 val nodeId = superCollider.oscMeta.nextNodeId()
                 node(nodeId, fxType.scName)
@@ -185,7 +201,7 @@ class Application(val config: Config, val stateProvider: StateProvider) {
             }
             node("fxTransfer")
         }
-        superCollider.sendInBundle(trackGroupPkts)
+        superCollider.sendInBundle(trackGroupMsgs)
 
         return Track(idx, busId, groupId, globalFXList.map { it.type to it }.toMap())
     }

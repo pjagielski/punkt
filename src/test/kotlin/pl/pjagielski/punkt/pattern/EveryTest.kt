@@ -50,4 +50,25 @@ class EveryTest {
         assertThat(phrase.toList()).extracting(Step::beat)
             .containsExactly(0.0, 1.0, 2.0)
     }
+
+    @Test
+    fun shouldAddRestsToAllWithinRange() {
+        val phrase = scale.phrase(
+            degrees(repeat(0)), repeat(1.0)
+        ).take(8).all(Step::rest, (4..6))
+
+        assertThat(phrase.toList()).extracting(Step::beat)
+            .containsExactly(0.0, 1.0, 2.0, 3.0, 7.0)
+    }
+
+    @Test
+    fun shouldAddRestsEveryBeatWithinRange() {
+        val phrase = scale.phrase(
+            degrees(repeat(0)), repeat(0.25)
+        ).take(8).every(4, Step::rest, (0..1))
+
+        assertThat(phrase.toList()).extracting(Step::beat)
+            .containsExactly(0.5, 0.75, 1.5, 1.75)
+    }
+
 }

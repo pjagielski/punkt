@@ -38,6 +38,7 @@ class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superC
     fun playBar(bar: Int, state: State, at: LocalDateTime) {
         val (bpm, beatsPerBar) = state.trackConfig
         val millisPerBeat = state.trackConfig.millisPerBeat
+        val startedAt = metronome.startAt
 
         if (!playing) return
 
@@ -49,12 +50,14 @@ class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superC
         metronome.beatsPerBar = beatsPerBar
 
         setEffects(state, at, bar)
-        playNotes(state, at, bar)
+        playNotes(state, at, bar, startedAt)
 
         val nextBarAt = at.plus((beatsPerBar.toDouble() * millisPerBeat.toDouble()).toLong(), ChronoUnit.MILLIS)
 
         schedule(nextBarAt.minus(200, ChronoUnit.MILLIS)) {
-            playBar(bar + 1, state, nextBarAt)
+            if (playing && startedAt == metronome.startAt) {
+                playBar(bar + 1, state, nextBarAt)
+            }
         }
     }
 
@@ -82,12 +85,15 @@ class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superC
         }
     }
 
-    private fun playNotes(state: State, at: LocalDateTime, bar: Int) {
+    private fun playNotes(state: State, at: LocalDateTime, bar: Int, startedAt: LocalDateTime) {
         val millisPerBeat = state.trackConfig.millisPerBeat
         state.notes.forEach { note ->
             val playAt = at.plus((note.beat * millisPerBeat).toLong(), ChronoUnit.MILLIS)
             schedule(playAt.minus(150, ChronoUnit.MILLIS)) {
-                player.playNote(bar, note, playAt, state)
+                // check if not stopped or restarted
+                if (playing && startedAt == metronome.startAt) {
+                    player.playNote(bar, note, playAt, state)
+                }
             }
         }
     }
