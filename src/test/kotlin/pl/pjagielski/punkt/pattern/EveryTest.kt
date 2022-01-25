@@ -17,7 +17,7 @@ class EveryTest {
             degrees(repeat(0)), repeat(1.0)
         ).take(8).every(4, Step::low)
 
-        assertThat(phrase.toList()).extracting(Step::midinote)
+        assertThat(phrase.toList()).extracting { it.midinote.compute(0) }
             .containsExactly(C.low(), C, C, C, C.low(), C, C, C)
     }
 
@@ -27,7 +27,7 @@ class EveryTest {
             degrees(repeat(0)), repeat(1.0)
         ).take(8).every(4, Step::low, from = 2)
 
-        assertThat(phrase.toList()).extracting(Step::midinote)
+        assertThat(phrase.toList()).extracting { it.midinote.compute(0) }
             .containsExactly(C, C, C.low(), C, C, C, C.low(), C)
     }
 

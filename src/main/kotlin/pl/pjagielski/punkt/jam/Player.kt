@@ -27,11 +27,12 @@ class Player(val samples: Samples, val loops: Loops, val state: State,
 
         when (note) {
             is Synth -> {
-                val freq = midiToHz(note.midinote)
+                val midinote = note.midinote.compute(bar)
+                val freq = midiToHz(midinote)
                 val dur = note.duration.toFloat()
                 val params = listOf("freq", freq, "amp", note.amp, "dur", dur)
                 val synthParams = note.params.compute(state, currentBeat).flatMap { it.toList() }
-                logger.info("beat $currentBeat, synth ${note.name}, note ${note.midinote}, params $synthParams")
+                logger.info("beat $currentBeat, synth ${note.name}, note $midinote, params $synthParams")
 
                 sendInGroup(note, track.bus, dur, currentBeat, playAt) {
                     node(note.name, position = Position.HEAD, params = params + synthParams)

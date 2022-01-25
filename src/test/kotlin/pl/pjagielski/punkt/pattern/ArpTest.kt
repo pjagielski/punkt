@@ -55,7 +55,7 @@ class ArpTest {
                 .synth("test")
         }
 
-        assertThat(pats).extracting { it.midinote }
+        assertThat(pats).extracting { it.computeForBar(0) }
             .containsExactly(
                 64, 67, 71, 64, 67, 71, 69, 72, 76, 69, 72, 76, 72, 76, 79, 72, 76, 79, 74, 78, 81, 74, 78, 81
             )

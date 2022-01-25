@@ -1,15 +1,12 @@
 package pl.pjagielski.punkt.pattern
 
 import assertk.assertThat
+import assertk.assertions.containsAll
 import assertk.assertions.containsExactly
 import assertk.assertions.extracting
 import org.junit.jupiter.api.Test
 import pl.pjagielski.punkt.melody.*
-import pl.pjagielski.punkt.melody.Intervals.*
-import pl.pjagielski.punkt.pattern.Note
-import pl.pjagielski.punkt.pattern.cycle
-import pl.pjagielski.punkt.pattern.patterns
-import pl.pjagielski.punkt.pattern.synth
+import pl.pjagielski.punkt.melody.Intervals.minor
 
 class NotesBuilderTest {
 
@@ -39,7 +36,7 @@ class NotesBuilderTest {
         }
 
         assertThat(notes)
-            .extracting(Note::beat, Note::duration, Note::midinote)
+            .extracting(Note::beat, Note::duration) { it.computeForBar(0) }
             .containsExactly(
                 Triple(0.0, 0.75, 61),
                 Triple(0.0, 0.75, 68),
@@ -93,7 +90,7 @@ class NotesBuilderTest {
         }
 
         assertThat(notes)
-            .extracting(Note::beat, Note::duration, Note::midinote)
+            .extracting(Note::beat, Note::duration) { it.computeForBar(0) }
             .containsExactly(
                 Triple(0.0 , 0.75, 61),
                 Triple(0.75, 0.75, 61),
@@ -115,7 +112,7 @@ class NotesBuilderTest {
         }
 
         assertThat(notes)
-            .extracting(Note::beat, Note::duration, Note::midinote)
+            .extracting(Note::beat, Note::duration) { it.computeForBar(0) }
             .containsExactly(
                 Triple(0.0, 1.0, 61),
                 Triple(0.0, 1.0, 64),
@@ -134,7 +131,7 @@ class NotesBuilderTest {
         }
 
         assertThat(notes)
-            .extracting(Note::beat, Note::duration, Note::midinote)
+            .extracting(Note::beat, Note::duration) { it.computeForBar(0) }
             .containsExactly(
                 Triple(1.0, 0.75, 61),
                 Triple(1.0, 0.75, 64),
@@ -142,6 +139,78 @@ class NotesBuilderTest {
                 Triple(3.0, 0.75, 66),
                 Triple(3.0, 0.75, 69),
                 Triple(3.0, 0.75, 73)
+            )
+    }
+
+    @Test
+    fun shouldCreateTimeVarChords() {
+        val scale = Scale(C.sharp(), minor)
+        val notes = patterns(beats = 4) {
+            + scale
+                .phrase(
+                    timevars(cycle(Chord.I), cycle(Chord.IV, Chord.IV, Chord.V)),
+                    cycle(1.0)
+                )
+                .synth("test")
+        }
+
+        assertThat(notes)
+            .extracting(Note::beat, Note::duration) { it.computeForBar(0) }
+            .containsAll(
+                Triple(0.0, 1.0, 61),
+                Triple(0.0, 1.0, 64),
+                Triple(0.0, 1.0, 68),
+                Triple(1.0, 1.0, 61),
+                Triple(1.0, 1.0, 64),
+                Triple(1.0, 1.0, 68)
+            )
+
+        assertThat(notes)
+            .extracting(Note::beat, Note::duration) { it.computeForBar(1) }
+            .containsAll(
+                Triple(0.0, 1.0, 66),
+                Triple(0.0, 1.0, 69),
+                Triple(0.0, 1.0, 73),
+                Triple(1.0, 1.0, 66),
+                Triple(1.0, 1.0, 69),
+                Triple(1.0, 1.0, 73),
+                Triple(2.0, 1.0, 68),
+                Triple(2.0, 1.0, 71),
+                Triple(2.0, 1.0, 75)
+            )
+    }
+
+    @Test
+    fun shouldCreateTimeVarArp() {
+        val scale = Scale(C.sharp(), minor)
+        val notes = patterns(beats = 4) {
+            val arp1 = cycle(arp((0..3).toList(), 4)).flatMap { listOf(it, null) }
+            val arp2 = cycle(arp((2..5).toList(), 4)).flatMap { listOf(it, null) }
+
+            + scale
+                .phrase(
+                    timevars(arp1, arp2),
+                    cycle(0.5)
+                )
+                .synth("test")
+        }
+
+        assertThat(notes)
+            .extracting(Note::beat, Note::duration) { it.computeForBar(0) }
+            .containsAll(
+                Triple(0.0, 0.5, 61),
+                Triple(1.0, 0.5, 63),
+                Triple(2.0, 0.5, 64),
+                Triple(3.0, 0.5, 66),
+            )
+
+        assertThat(notes)
+            .extracting(Note::beat, Note::duration) { it.computeForBar(1) }
+            .containsAll(
+                Triple(0.0, 0.5, 64),
+                Triple(1.0, 0.5, 66),
+                Triple(2.0, 0.5, 68),
+                Triple(3.0, 0.5, 69),
             )
     }
 
