@@ -3,18 +3,33 @@ package pl.pjagielski.punkt.pattern
 import pl.pjagielski.punkt.fx.FXMap
 import pl.pjagielski.punkt.fx.WithFX
 import pl.pjagielski.punkt.fx.emptyFXMap
+import pl.pjagielski.punkt.melody.high
+import pl.pjagielski.punkt.melody.low
 import pl.pjagielski.punkt.param.*
+
+data class TimeVarMidiNote(override val values: List<Int>): TimeVar<Int> {
+    constructor(vararg values: Int) : this(values.toList())
+
+    fun low(): TimeVarMidiNote = this.copy(values = values.map(Int::low))
+    fun high(): TimeVarMidiNote = this.copy(values = values.map(Int::high))
+    fun first() = values.first()
+}
+
+interface TimeVar<T> {
+    val values: List<T>
+    fun compute(bar: Int) = values[bar % values.size]
+}
 
 interface Note {
     val beat: Double
     val duration: Double
-    val midinote: Int?
+    val midinote: TimeVarMidiNote?
     val amp: Float
     val track: Int?
 }
 
 data class Synth(
-    override val beat: Double, override val duration: Double, val name: String, override val midinote: Int,
+    override val beat: Double, override val duration: Double, val name: String, override val midinote: TimeVarMidiNote,
     override val amp: Float = 1.0f, override val params: ParamMap = emptyParamMap(), override val fxs: FXMap = emptyFXMap(),
     override val track: Int? = null
 ) : Note, WithFX<Synth>, WithParams<Synth> {
@@ -24,13 +39,13 @@ data class Synth(
 }
 
 data class MidiOut(
-    override val beat: Double, override val duration: Double, val channel: Int, override val midinote: Int,
+    override val beat: Double, override val duration: Double, val channel: Int, override val midinote: TimeVarMidiNote,
     override val amp: Float = 1.0f, override val track: Int? = null
 ) : Note
 
 data class Sample(
     override val beat: Double, override val duration: Double, val name: String,
-    override val amp: Float = 1.0f, override val midinote: Int? = null,
+    override val amp: Float = 1.0f, override val midinote: TimeVarMidiNote? = null,
     override val fxs: FXMap = emptyFXMap(), override val track: Int? = null
 ) : Note, WithFX<Sample> {
 
@@ -40,7 +55,7 @@ data class Sample(
 data class Loop(
     override val beat: Double, val name: String,
     val beats: Float, val startBeat: Float = 0.0f,
-    override val amp: Float = 1.0f, override val duration: Double = 0.0, override val midinote: Int? = null,
+    override val amp: Float = 1.0f, override val duration: Double = 0.0, override val midinote: TimeVarMidiNote? = null,
     override val fxs: FXMap = emptyFXMap(), override val track: Int? = null
 ) : Note, WithFX<Loop> {
     constructor(beat: Double, name: String, beats: Number, startBeat: Number = 0.0, amp: Number = 1.0f)
@@ -94,3 +109,5 @@ data class Loop(
 
 fun <T : Note> Sequence<T>.mute() = emptySequence<T>()
 fun <T : Note> List<Sequence<T>>.mute() = emptySequence<T>()
+
+fun Note.computeForBar(bar: Int) = this.midinote?.compute(bar)

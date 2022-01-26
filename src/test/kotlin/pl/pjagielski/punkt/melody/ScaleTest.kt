@@ -7,10 +7,7 @@ import assertk.assertions.isEqualTo
 import org.junit.jupiter.api.Test
 import pl.pjagielski.punkt.melody.Intervals.major
 import pl.pjagielski.punkt.melody.Intervals.minor
-import pl.pjagielski.punkt.pattern.Note
-import pl.pjagielski.punkt.pattern.Step
-import pl.pjagielski.punkt.pattern.cycle
-import pl.pjagielski.punkt.pattern.synth
+import pl.pjagielski.punkt.pattern.*
 
 class ScaleTest {
 
@@ -50,13 +47,13 @@ class ScaleTest {
             .toList()
 
         assertThat(phrase)
-            .extracting(Note::beat, Note::midinote, Note::duration)
+            .extracting(Note::beat, Note::duration) { it.computeForBar(0) }
             .containsExactly(
-                Triple(0.0, 60, 0.5),
-                Triple(0.5, 64, 1.0),
-                Triple(1.5, 67, 0.5),
-                Triple(2.0, 64, 1.0),
-                Triple(3.0, 60, 0.5)
+                Triple(0.0, 0.5, 60),
+                Triple(0.5, 1.0, 64),
+                Triple(1.5, 0.5, 67),
+                Triple(2.0, 1.0, 64),
+                Triple(3.0, 0.5, 60)
             )
     }
 

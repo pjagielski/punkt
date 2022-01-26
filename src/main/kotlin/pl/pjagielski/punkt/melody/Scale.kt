@@ -1,7 +1,6 @@
 package pl.pjagielski.punkt.melody
 
-import pl.pjagielski.punkt.pattern.Step
-import pl.pjagielski.punkt.pattern.StepSequence
+import pl.pjagielski.punkt.pattern.*
 import kotlin.math.absoluteValue
 
 val C = 60
@@ -23,7 +22,7 @@ sealed class Intervals(val intervals: List<Int>) {
 
     fun reversed(): Intervals =
         Simple(this.intervals.reversed())
-    fun cycle() = pl.pjagielski.punkt.pattern.cycle(*this.intervals.toTypedArray()).filterNotNull()
+    fun cycle() = pl.pjagielski.punkt.pattern.cycle(*this.intervals.toTypedArray())
 
     private class Simple(intervals: List<Int>) : Intervals(intervals)
 
@@ -36,6 +35,25 @@ data class Degrees(val degrees: List<Int>) {
     constructor(vararg degrees: Int) : this(degrees.toList())
 }
 
+/**
+ * Here we must zip all the n-th value of Degrees to create another Degrees for each bar
+ */
+data class TimeVarDegrees(override val values: List<Degrees?>) : TimeVar<Degrees?> {
+    fun toMidiNotes(scale: Scale): List<TimeVarMidiNote> {
+        val minSize = values.filterNotNull().minOfOrNull { it.degrees.size } ?: return emptyList()
+        val result = ArrayList<TimeVarMidiNote>(minSize)
+        val iterators = values.filterNotNull().map { it.degrees.iterator() }
+        var i = 0
+        while (i < minSize) {
+            val degs = iterators.map { it.next() }.map(scale::note)
+            if (degs.isNotEmpty()) {
+                result.add(TimeVarMidiNote(degs))
+            }
+            i++
+        }
+        return result
+    }
+}
 
 fun degrees(degs: List<Int?>) = degs.map { it.toDegrees() }.asSequence()
 fun degrees(degs: Sequence<Int?>) = degs.map { it.toDegrees() }
@@ -48,6 +66,25 @@ fun degrees(degs: Sequence<Int?>) = degs.map { it.toDegrees() }
 fun Int?.toDegrees() = this?.let { Degrees(it) }
 fun Iterable<Chord?>.toDegrees(): Sequence<Degrees?> = this.map { it?.degrees()?.let(::Degrees) }.asSequence()
 fun Sequence<Chord?>.toDegrees(): Sequence<Degrees?> = this.map { it?.degrees()?.let(::Degrees) }
+fun List<Chord?>.toDegreesList(): List<Degrees?> = this.map { it?.degrees()?.let(::Degrees) }
+
+@JvmName("timevarsDegrees")
+fun timevars(vararg degrees: Sequence<Int?>): Sequence<TimeVarDegrees?> {
+    val iterators = degrees.map { seq -> seq.iterator() }
+    return generateSequence {
+        val nextDegrees = iterators.map { it.next() }.map { it.toDegrees() }
+        TimeVarDegrees(nextDegrees)
+    }
+}
+
+@JvmName("timevarsChords")
+fun timevars(vararg chords: Sequence<Chord?>): Sequence<TimeVarDegrees?> {
+    val iterators = chords.map { seq -> seq.iterator() }
+    return generateSequence {
+        val nextChords = iterators.map { it.next() }
+        TimeVarDegrees(nextChords.toDegreesList())
+    }
+}
 
 class Scale(val from: Int, val intervals: Intervals) {
 
@@ -65,17 +102,25 @@ class Scale(val from: Int, val intervals: Intervals) {
     fun chord(chord: Chord): List<Int> = chord.degrees().map(this::note)
 
     fun phrase(degrees: Sequence<Degrees?>, durations: Sequence<Number?>, at: Double = 0.0) =
-        phrase(degrees, durations.iterator(), at)
+        phrase(degrees.mapNotNull { TimeVarDegrees(listOf(it)) }, durations.iterator(), at)
 
     fun phrase(degrees: Sequence<Degrees?>, durations: List<Number?>, at: Double = 0.0) =
+        phrase(degrees.mapNotNull { TimeVarDegrees(listOf(it)) }, durations.iterator(), at)
+
+    @JvmName("timeVarPhrase")
+    fun phrase(degrees: Sequence<TimeVarDegrees?>, durations: List<Number?>, at: Double = 0.0) =
         phrase(degrees, durations.iterator(), at)
 
-    private fun phrase(degrees: Sequence<Degrees?>, durIt: Iterator<Number?>, at: Double = 0.0): StepSequence {
+    @JvmName("timeVarPhrase")
+    fun phrase(degrees: Sequence<TimeVarDegrees?>, durations: Sequence<Number?>, at: Double = 0.0) =
+        phrase(degrees, durations.iterator(), at)
+
+    private fun phrase(vars: Sequence<TimeVarDegrees?>, durIt: Iterator<Number?>, at: Double = 0.0): StepSequence {
         var current = at
-        return degrees.map { deg ->
+        return vars.map { timeVar ->
             if (!durIt.hasNext()) return@map null
             durIt.next()?.let { dur ->
-                val ret = deg?.degrees?.map { d -> Step(current, dur.toDouble(), note(d)) }?.asSequence()
+                val ret = timeVar?.toMidiNotes(this)?.map { note -> Step(current, dur.toDouble(), note) }?.asSequence()
                 current += dur.toDouble()
                 ret
             } ?: sequenceOf()

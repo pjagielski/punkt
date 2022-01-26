@@ -1,12 +1,9 @@
 package pl.pjagielski.punkt.pattern
 
-import pl.pjagielski.punkt.melody.high
-import pl.pjagielski.punkt.melody.low
-
 data class Step(
     val beat: Double,
     val dur: Double,
-    val midinote: Int = 0
+    val midinote: TimeVarMidiNote = TimeVarMidiNote(0)
 ) {
     fun toSample(name: String, amp: Float = 1.0f, track: Int? = null) =
         Sample(beat, dur, name, amp, track = track)
@@ -137,7 +134,8 @@ class PatternBuilder(val beats: Number) {
     fun build() = sequences
         .flatMap { seq -> seq.beats(beats) }
         .sortedWith(
-            compareBy(Note::beat, { it.midinote ?: 0 }))
+            // TODO sort by?
+            compareBy(Note::beat, { it.midinote?.first() ?: 0 }))
 }
 
 fun patterns(beats: Number, body: PatternBuilder.() -> Unit): List<Note> {
