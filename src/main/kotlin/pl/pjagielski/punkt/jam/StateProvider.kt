@@ -4,7 +4,8 @@ import com.uchuhimo.konf.Config
 import mu.KotlinLogging
 import pl.pjagielski.punkt.config.Configuration
 import pl.pjagielski.punkt.config.TrackConfig
-import pl.pjagielski.punkt.live.loadFromScriptKSH
+import pl.pjagielski.punkt.live.executeScript
+import pl.pjagielski.punkt.live.toValue
 import pl.pjagielski.punkt.live.watchFile
 import pl.pjagielski.punkt.pattern.Note
 import java.io.File
@@ -39,7 +40,7 @@ class LiveReloadingStateProvider(val config: Config) : StateProvider() {
         val reloadState = watchFile(File(liveFile)) { file ->
             val start = System.currentTimeMillis()
             logger.info("Reloading file...")
-            val func = loadFromScriptKSH<(TrackConfig) -> List<Note>>(file, scriptingHost)
+            val func = executeScript(file, scriptingHost).toValue<(TrackConfig) -> List<Note>>()
             val stop = System.currentTimeMillis()
             logger.info("Reloading took ${stop - start}ms")
             notes = func.invoke(state.trackConfig)
