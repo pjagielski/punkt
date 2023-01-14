@@ -106,6 +106,10 @@ data class Loop(
     this.zip(amps).map { (it, amp) -> it.copy(amp = amp.toFloat()) }
 @JvmName("seqLoopAmpSeq") fun Sequence<Loop>.amp(amps: Sequence<Number>) =
     this.zip(amps).map { (it, amp) -> it.copy(amp = amp.toFloat()) }
+@JvmName("seqMidiAmpSeq") fun Sequence<MidiOut>.amp(amps: Sequence<Number>) =
+    this.zip(amps).map { (it, amp) -> it.copy(amp = amp.toFloat()) }
+@JvmName("seqLoopStartbeatSeq") fun Sequence<Loop>.startBeat(amps: Sequence<Number>) =
+    this.zip(amps).map { (it, beat) -> it.copy(startBeat = beat.toFloat()) }
 
 fun <T : Note> Sequence<T>.mute() = emptySequence<T>()
 fun <T : Note> List<Sequence<T>>.mute() = emptySequence<T>()

@@ -13,21 +13,4 @@ SynthDef.new(\globalReverb, {
 	ReplaceOut.ar(bus, verb);
 }).add;
 
-/*
-SynthDef.new(\lpf, {
-	|bus, cutoff=0.5, res=0.5, drive=0.3|
-	var osc;
-	osc = In.ar(bus, 2);
-	osc = MiRipples.ar(osc, cutoff, res, drive);
-	ReplaceOut.ar(bus, osc);
-}).add;
-
-SynthDef.new(\globalChorus, {
-	|bus, bright=0.0, pos=0.0|
-	var sound = In.ar(bus, 2);
-	var chorus = MiRings.ar(in: sound, bright: bright, pos: pos, damp: 0.1, poly: 1, model: 1, easteregg: 1);
-	ReplaceOut.ar(bus, chorus);
-}).add;
-*/
-
 )
