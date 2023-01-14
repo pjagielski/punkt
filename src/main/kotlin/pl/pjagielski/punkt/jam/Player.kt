@@ -12,6 +12,7 @@ import pl.pjagielski.punkt.pattern.*
 import pl.pjagielski.punkt.sounds.Loops
 import pl.pjagielski.punkt.sounds.Samples
 import java.time.LocalDateTime
+import kotlin.math.roundToInt
 
 class Player(val samples: Samples, val loops: Loops, val state: State,
              val metronome: Metronome, val superCollider: OscServer, val midiBridge: OscServer) {
@@ -60,10 +61,12 @@ class Player(val samples: Samples, val loops: Loops, val state: State,
                 }
             }
             is MidiOut -> {
-                val midiVel = 100 //  TODO
+                val midinote = note.midinote.compute(bar)
+                val amp = note.amp
+                val midiVel = (127 * amp).roundToInt()
                 val noteOnPacket = MyOSCMessage(
                     "/midi/note",
-                    listOf(note.channel, note.midinote, midiVel, note.duration, midiNudge),
+                    listOf(note.channel, midinote, midiVel, note.duration, midiNudge),
                     OSCMessageInfo("iiidd")
                 )
                 midiBridge.sendInBundle(listOf(noteOnPacket), runAt = playAt)
