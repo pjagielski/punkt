@@ -1,6 +1,6 @@
 package pl.pjagielski.punkt.sounds
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pl.pjagielski.punkt.osc.OscServer
 
 data class LoopBuffer(
@@ -23,7 +23,7 @@ class Loops(superCollider: OscServer) : Sounds<LoopBuffer>(superCollider) {
     override fun createBuffer(nextBufNum: Int, filename: String, channels: Int, length: Float): Pair<String, LoopBuffer>? {
         val matchResult = loopPattern.find(filename)
         if (matchResult == null) {
-            logger.warn("Not matched $filename")
+            logger.warn {"Not matched $filename" }
             return null
         }
         val (bpm, beats, name) = matchResult.destructured

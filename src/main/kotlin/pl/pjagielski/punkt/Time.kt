@@ -3,7 +3,7 @@ package pl.pjagielski.punkt
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pl.pjagielski.punkt.config.TrackConfig
 import java.time.Duration
 import java.time.LocalDateTime
@@ -48,14 +48,14 @@ class Metronome(var bpm: Number, var beatsPerBar: Number) {
 
     fun nextBarAt(): LocalDateTime {
         val currentBar = currentBar()
-        logger.debug("Current bar $currentBar")
+        logger.debug { "Current bar $currentBar" }
         return startAt.plus((currentBar + 1) * millisPerBar, ChronoUnit.MILLIS)
     }
 
     fun nextBeatAt(): LocalDateTime {
         val currentBarStart = startAt.plus(currentBar() * millisPerBar, ChronoUnit.MILLIS)
         val currentBeatInBar = currentBeatInBar()
-        logger.debug("Current beat in bar $currentBeatInBar")
+        logger.debug {"Current beat in bar $currentBeatInBar" }
         return currentBarStart.plus(((currentBeatInBar + 1) * millisPerBeat), ChronoUnit.MILLIS)
     }
 

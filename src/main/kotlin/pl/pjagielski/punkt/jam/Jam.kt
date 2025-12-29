@@ -4,7 +4,7 @@ import com.illposed.osc.OSCMessage
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pl.pjagielski.punkt.Metronome
 import pl.pjagielski.punkt.config.MidiConfig
 import pl.pjagielski.punkt.config.TrackConfig
@@ -42,7 +42,7 @@ class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superC
 
         if (!playing) return
 
-        logger.info("bar $bar")
+        logger.info { "bar $bar" }
 
         state.notes = stateProvider.provide(state.trackConfig)
 
@@ -75,7 +75,7 @@ class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superC
                 track.globalFXs.asList().forEach { globalFx ->
                     val args = globalFx.params.compute(state, currentBeat).flatMap { it.toList() }
                     if (args.isNotEmpty()) {
-                        logger.debug("beat $currentBeat, fx ${globalFx.type.name}, params $args")
+                        logger.debug { "beat $currentBeat, fx ${globalFx.type.name}, params $args" }
                     }
                     val commonArgs = listOf("bpm", metronome.bpm)
                     val ctrlPkt = OSCMessage("/n_set", listOf(globalFx.nodeId) + commonArgs + args)

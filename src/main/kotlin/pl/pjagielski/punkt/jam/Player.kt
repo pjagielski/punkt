@@ -2,7 +2,7 @@ package pl.pjagielski.punkt.jam
 
 import com.illposed.osc.MyOSCMessage
 import com.illposed.osc.OSCMessageInfo
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pl.pjagielski.punkt.Metronome
 import pl.pjagielski.punkt.fx.WithFX
 import pl.pjagielski.punkt.osc.Group
@@ -33,7 +33,7 @@ class Player(val samples: Samples, val loops: Loops, val state: State,
                 val dur = note.duration.toFloat()
                 val params = listOf("freq", freq, "amp", note.amp, "dur", dur)
                 val synthParams = note.params.compute(state, currentBeat).flatMap { it.toList() }
-                logger.info("beat $currentBeat, synth ${note.name}, note $midinote, params $synthParams")
+                logger.info { "beat $currentBeat, synth ${note.name}, note $midinote, params $synthParams" }
 
                 sendInGroup(note, track.bus, dur, currentBeat, playAt) {
                     node(note.name, position = Position.HEAD, params = params + synthParams)
@@ -43,7 +43,7 @@ class Player(val samples: Samples, val loops: Loops, val state: State,
                 val buffer = samples[note.name] ?: return
                 val player = "play${buffer.channels}"
 
-                logger.debug("beat $currentBeat, sample ${note.name}")
+                logger.debug { "beat $currentBeat, sample ${note.name}" }
 
                 sendInGroup(note, track.bus, buffer.length, currentBeat, playAt) {
                     node(player, position = Position.HEAD, params = listOf("buf", buffer.bufNum, "amp", note.amp))
@@ -51,7 +51,7 @@ class Player(val samples: Samples, val loops: Loops, val state: State,
             }
             is Loop -> {
                 val buffer = loops[note.name] ?: return
-                logger.debug("beat $currentBeat, loop ${note.name}, length ${buffer.length}")
+                logger.debug { "beat $currentBeat, loop ${note.name}, length ${buffer.length}" }
 
                 sendInGroup(note, track.bus, buffer.length, currentBeat, playAt) {
                     node("sampler", position = Position.HEAD, params = listOf(
@@ -79,7 +79,7 @@ class Player(val samples: Samples, val loops: Loops, val state: State,
             builder()
             item.fxs.forEach { (fxName, fx) ->
                 val args = fx.params.compute(state, currentBeat).flatMap { it.toList() }
-                logger.debug("beat $currentBeat, fx $fxName, params $args")
+                logger.debug { "beat $currentBeat, fx $fxName, params $args" }
                 node(fxName, position = Position.TAIL, params = args)
             }
             val busParams = outBus?.let { listOf("outBus", outBus) } ?: emptyList()

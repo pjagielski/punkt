@@ -1,7 +1,7 @@
 package pl.pjagielski.punkt.sounds
 
 import com.illposed.osc.OSCMessage
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pl.pjagielski.punkt.osc.OscServer
 import java.io.File
 import javax.sound.sampled.AudioSystem
@@ -20,7 +20,7 @@ abstract class Sounds<T : Buffer>(val superCollider: OscServer) {
     private val logger = KotlinLogging.logger {}
 
     fun load(dirname: String) {
-        logger.info("Loading ${this.javaClass.simpleName} from $dirname")
+        logger.info {"Loading ${this.javaClass.simpleName} from $dirname" }
         val files = File(dirname).walk()
         buffers = files.map { sampleFile ->
             if (sampleFile.isDirectory) {
@@ -35,7 +35,7 @@ abstract class Sounds<T : Buffer>(val superCollider: OscServer) {
             val filename = sampleFile.nameWithoutExtension
             createBuffer(nextBufNum, filename, channels, length)
         }.filterNotNull().toMap()
-        logger.info("Finished loading ${this.javaClass.simpleName} got ${buffers.size} items")
+        logger.info {"Finished loading ${this.javaClass.simpleName} got ${buffers.size} items" }
 
     }
 

@@ -1,7 +1,7 @@
 package pl.pjagielski.punkt.jam
 
 import com.uchuhimo.konf.Config
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pl.pjagielski.punkt.config.Configuration
 import pl.pjagielski.punkt.config.TrackConfig
 import pl.pjagielski.punkt.live.executeScript
@@ -39,10 +39,10 @@ class LiveReloadingStateProvider(val config: Config) : StateProvider() {
 
         val reloadState = watchFile(File(liveFile)) { file ->
             val start = System.currentTimeMillis()
-            logger.info("Reloading file...")
+            logger.info { "Reloading file..." }
             val func = executeScript(file, scriptingHost).toValue<(TrackConfig) -> List<Note>>()
             val stop = System.currentTimeMillis()
-            logger.info("Reloading took ${stop - start}ms")
+            logger.info { "Reloading took ${stop - start}ms" }
             notes = func.invoke(state.trackConfig)
             onChanged?.invoke(notes, state.trackConfig)
         }
