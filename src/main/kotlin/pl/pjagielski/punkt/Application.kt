@@ -2,13 +2,16 @@ package pl.pjagielski.punkt
 
 import com.illposed.osc.OSCMessage
 import com.uchuhimo.konf.Config
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.http4k.core.*
 import org.http4k.core.Method.GET
+import org.http4k.core.Method.POST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.filter.CorsPolicy
 import org.http4k.filter.ServerFilters
 import org.http4k.format.Jackson.auto
+import org.http4k.format.Jackson.json
+import org.http4k.format.Jackson.asJsonValue
 import org.http4k.routing.bind
 import org.http4k.routing.routes
 import org.http4k.routing.websockets
@@ -82,10 +85,10 @@ class Application(val config: Config, val stateProvider: StateProvider) {
             .toMap()
 
         outDeviceMap.forEach { (name, dev) ->
-            logger.info("Connecting to device $name")
+            logger.info { "Connecting to device $name" }
             dev.transmitter.receiver = object: Receiver {
                 override fun close() {
-                    logger.info("Disconnected device $name")
+                    logger.info { "Disconnected device $name" }
                 }
 
                 override fun send(message: MidiMessage, time: Long) {
@@ -93,14 +96,14 @@ class Application(val config: Config, val stateProvider: StateProvider) {
                         if (message.command == ShortMessage.NOTE_ON) {
                             val midinote = message.data1
                             val velocity = message.data2
-                            logger.debug("MIDI NOTE_ON -> note: $midinote, velocity: $velocity")
+                            logger.debug { "MIDI NOTE_ON -> note: $midinote, velocity: $velocity" }
                             val amp = (velocity.toDouble() / 127.toDouble()).toFloat()
                             val note = trackConfig.midiPlayers[name]?.invoke(MidiNote(midinote, amp))
                             note?.let { player.playNote(0, it, LocalDateTime.now(), state) }
                         } else if (message.command == ShortMessage.CONTROL_CHANGE) {
                             val ch = message.channel
                             val value = message.data2.toDouble() / 127.toDouble()
-                            logger.info("MIDI CC -> channel: $ch, data2: ${message.data2}, value: $value")
+                            logger.info { "MIDI CC -> channel: $ch, data2: ${message.data2}, value: $value" }
                             state.midiState[ch] = value
                         }
                     }
@@ -120,10 +123,10 @@ class Application(val config: Config, val stateProvider: StateProvider) {
         val notesWebsockets = Collections.synchronizedSet<Websocket>(LinkedHashSet())
         val ws = websockets(
             "/notes" bind { ws: Websocket ->
-                logger.info("Notes WS opened")
+                logger.info { "Notes WS opened" }
                 notesWebsockets.add(ws)
                 ws.onClose {
-                    logger.info("Notes WS closed")
+                    logger.info { "Notes WS closed" }
                     notesWebsockets.remove(ws)
                 }
             },
@@ -134,7 +137,7 @@ class Application(val config: Config, val stateProvider: StateProvider) {
             }
         )
         stateProvider.onChanged = { notes, _ ->
-            logger.info("Sending notes, connections: $notesWebsockets")
+            logger.info { "Sending notes, connections: $notesWebsockets" }
             notesWebsockets.forEach {
                 it.send(notesWsLens(notes))
             }
@@ -145,6 +148,19 @@ class Application(val config: Config, val stateProvider: StateProvider) {
                 val notes = stateProvider.provide(state.trackConfig)
                 val lens = notesLens(notes, request)
                 Response(OK).body(lens.body).headers(lens.headers)
+            },
+            "/start" bind POST to {
+                jam.start(state)
+                Response(OK)
+            },
+            "/stop" bind POST to {
+                jam.stop()
+                Response(OK)
+            },
+            "/playing" bind GET to {
+                Response(OK).with(
+                    Body.json().toLens() of jam.playing.asJsonValue()
+                )
             }
         )
 
@@ -152,16 +168,16 @@ class Application(val config: Config, val stateProvider: StateProvider) {
         val server = PolyHandler(cors.then(app), ws).asServer(Jetty(8000)).start()
 
         Runtime.getRuntime().addShutdownHook(Thread {
-            logger.info("Stopping jam...")
+            logger.info { "Stopping jam..." }
             jam.stop()
             Thread.sleep(metronome.millisToNextBar() + 250)
 
-            logger.info("Cleaning up track effect nodes...")
+            logger.info { "Cleaning up track effect nodes..." }
             val freeTracksMsgs = tracks.asList().map { track -> OSCMessage("/g_freeAll", listOf(track.group)) }
             superCollider.sendInBundle(freeTracksMsgs, runAt = metronome.nextBarAt())
-            logger.info("Shutting down server")
+            logger.info { "Shutting down server" }
             server.stop()
-            logger.info("Closing midi connections")
+            logger.info { "Closing midi connections" }
             outDeviceMap.forEach { (_, dev) -> dev.close() }
             ticker.stop()
         })
@@ -176,7 +192,7 @@ class Application(val config: Config, val stateProvider: StateProvider) {
         val busId = superCollider.oscMeta.nextTrackBusId()
         val groupId = superCollider.oscMeta.nextNodeId()
         val globalFXList = mutableListOf<GlobalFX>()
-        val trackGroupPkts = superCollider.group(bid = busId, gid = groupId) {
+        val trackGroupMsgs = superCollider.group(bid = busId, gid = groupId) {
             GlobalFX.Type.values().forEach { fxType ->
                 val nodeId = superCollider.oscMeta.nextNodeId()
                 node(nodeId, fxType.scName)
@@ -185,7 +201,7 @@ class Application(val config: Config, val stateProvider: StateProvider) {
             }
             node("fxTransfer")
         }
-        superCollider.sendInBundle(trackGroupPkts)
+        superCollider.sendInBundle(trackGroupMsgs)
 
         return Track(idx, busId, groupId, globalFXList.map { it.type to it }.toMap())
     }

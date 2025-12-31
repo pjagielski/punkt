@@ -17,7 +17,8 @@ class ChordTest {
         val Bbmin = Scale(B.flat(), minor)
         val Cmin = Scale(C, minor)
 
-        assertThat(Fmin.chord(Chord.III)).isEqualTo(Abmaj.chord(Chord.I))
+        val chord = Abmaj.chord(Chord.I)
+        assertThat(Fmin.chord(Chord.III)).isEqualTo(chord)
         assertThat(Fmin.chord(Chord.IV)).isEqualTo(Bbmin.chord(Chord.I))
         assertThat(Fmin.chord(Chord.V)).isEqualTo(Cmin.chord(Chord.I.high()))
         assertThat(Amin.chord(Chord(4, listOf(0, 3, 4)).inversion(2).low()))

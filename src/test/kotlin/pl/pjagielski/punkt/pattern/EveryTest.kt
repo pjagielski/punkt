@@ -17,7 +17,7 @@ class EveryTest {
             degrees(repeat(0)), repeat(1.0)
         ).take(8).every(4, Step::low)
 
-        assertThat(phrase.toList()).extracting(Step::midinote)
+        assertThat(phrase.toList()).extracting { it.midinote.compute(0) }
             .containsExactly(C.low(), C, C, C, C.low(), C, C, C)
     }
 
@@ -27,7 +27,7 @@ class EveryTest {
             degrees(repeat(0)), repeat(1.0)
         ).take(8).every(4, Step::low, from = 2)
 
-        assertThat(phrase.toList()).extracting(Step::midinote)
+        assertThat(phrase.toList()).extracting { it.midinote.compute(0) }
             .containsExactly(C, C, C.low(), C, C, C, C.low(), C)
     }
 
@@ -50,4 +50,25 @@ class EveryTest {
         assertThat(phrase.toList()).extracting(Step::beat)
             .containsExactly(0.0, 1.0, 2.0)
     }
+
+    @Test
+    fun shouldAddRestsToAllWithinRange() {
+        val phrase = scale.phrase(
+            degrees(repeat(0)), repeat(1.0)
+        ).take(8).all(Step::rest, (4..6))
+
+        assertThat(phrase.toList()).extracting(Step::beat)
+            .containsExactly(0.0, 1.0, 2.0, 3.0, 7.0)
+    }
+
+    @Test
+    fun shouldAddRestsEveryBeatWithinRange() {
+        val phrase = scale.phrase(
+            degrees(repeat(0)), repeat(0.25)
+        ).take(8).every(4, Step::rest, (0..1))
+
+        assertThat(phrase.toList()).extracting(Step::beat)
+            .containsExactly(0.5, 0.75, 1.5, 1.75)
+    }
+
 }

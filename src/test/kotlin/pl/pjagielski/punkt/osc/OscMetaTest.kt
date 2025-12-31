@@ -16,7 +16,7 @@ class OscMetaTest {
         val buses = (1..10).map { oscMeta.nextTrackBusId() }
         assertThat(buses).containsExactly(20, 22, 24, 26, 28, 30, 32, 34, 36, 38)
 
-        assertThat { oscMeta.nextTrackBusId() }
+        assertThat(runCatching { oscMeta.nextTrackBusId() })
             .isFailure().hasMessage("Too many tracks")
     }
 

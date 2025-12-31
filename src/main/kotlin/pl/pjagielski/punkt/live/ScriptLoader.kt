@@ -20,7 +20,7 @@ internal fun evalScriptWithConfiguration(
     return host.eval(script.toScriptSource(), compilationConfiguration, null)
 }
 
-fun <T> loadFromScriptKSH(
+fun executeScript(
     script: File,
     host: BasicScriptingHost = BasicJvmScriptingHost(),
     body: ScriptCompilationConfiguration.Builder.() -> Unit = {
@@ -30,5 +30,7 @@ fun <T> loadFromScriptKSH(
         }
 
     }
-): T = (evalScriptWithConfiguration(script.readText(), host, body).valueOrThrow().returnValue as ResultValue.Value).value as T
+) = evalScriptWithConfiguration(script.readText(), host, body)
+
+fun <T> ResultWithDiagnostics<EvaluationResult>.toValue() = (valueOrThrow().returnValue as ResultValue.Value).value as T
 

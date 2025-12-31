@@ -1,8 +1,9 @@
 package pl.pjagielski.punkt.live
 
-import com.sun.nio.file.SensitivityWatchEventModifier
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
@@ -13,12 +14,11 @@ import java.nio.file.WatchKey
 import kotlin.concurrent.thread
 
 class FileWatcher(val file: File, private val onChange: (File) -> Unit) {
-    val path = file.absoluteFile.toPath()
-    val parent = path.parent
+    val path: Path = file.absoluteFile.toPath()
+    val parent: Path = path.parent
     val key = pathKeys.getOrPut(parent) {
         parent.register(
             watchService, arrayOf(StandardWatchEventKinds.ENTRY_MODIFY),
-            SensitivityWatchEventModifier.HIGH
         )
     }
 
@@ -87,6 +87,7 @@ private val watchService by lazy {
 }
 
 private val watchThread by lazy {
+    val fileWatchScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     thread(isDaemon = true) {
         while (true) {
             val key = watchService.take()
@@ -98,7 +99,7 @@ private val watchThread by lazy {
                 fullPath?.let {
                     waiting[fullPath]?.cancel()
 
-                    waiting[fullPath] = GlobalScope.launch {
+                    waiting[fullPath] = fileWatchScope.launch {
                         delay(100)
                         watching[fullPath]?.forEach { w ->
                             w.triggerChange()

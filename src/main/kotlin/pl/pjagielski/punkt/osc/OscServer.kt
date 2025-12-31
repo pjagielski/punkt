@@ -4,7 +4,7 @@ import com.illposed.osc.OSCBundle
 import com.illposed.osc.OSCMessage
 import com.illposed.osc.OSCPacket
 import com.illposed.osc.argument.OSCTimeTag64
-import com.illposed.osc.transport.udp.OSCPortOut
+import com.illposed.osc.transport.OSCPortOut
 import java.net.InetAddress
 import java.time.LocalDateTime
 import java.time.ZoneId

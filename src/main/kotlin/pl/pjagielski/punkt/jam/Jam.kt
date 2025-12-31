@@ -1,10 +1,8 @@
 package pl.pjagielski.punkt.jam
 
 import com.illposed.osc.OSCMessage
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import mu.KotlinLogging
+import kotlinx.coroutines.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import pl.pjagielski.punkt.Metronome
 import pl.pjagielski.punkt.config.MidiConfig
 import pl.pjagielski.punkt.config.TrackConfig
@@ -29,7 +27,13 @@ fun midiToHz(note: Int): Float {
     return (440.0 * 2.0.pow((note - 69.0) / 12.0)).toFloat()
 }
 
-class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superCollider: OscServer, val player: Player) {
+class Jam(
+    val stateProvider: StateProvider,
+    val metronome: Metronome,
+    val superCollider: OscServer,
+    val player: Player,
+    private val schedulerScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -38,10 +42,11 @@ class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superC
     fun playBar(bar: Int, state: State, at: LocalDateTime) {
         val (bpm, beatsPerBar) = state.trackConfig
         val millisPerBeat = state.trackConfig.millisPerBeat
+        val startedAt = metronome.startAt
 
         if (!playing) return
 
-        logger.info("bar $bar")
+        logger.info { "bar $bar" }
 
         state.notes = stateProvider.provide(state.trackConfig)
 
@@ -49,12 +54,14 @@ class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superC
         metronome.beatsPerBar = beatsPerBar
 
         setEffects(state, at, bar)
-        playNotes(state, at, bar)
+        playNotes(state, at, bar, startedAt)
 
         val nextBarAt = at.plus((beatsPerBar.toDouble() * millisPerBeat.toDouble()).toLong(), ChronoUnit.MILLIS)
 
         schedule(nextBarAt.minus(200, ChronoUnit.MILLIS)) {
-            playBar(bar + 1, state, nextBarAt)
+            if (playing && startedAt == metronome.startAt) {
+                playBar(bar + 1, state, nextBarAt)
+            }
         }
     }
 
@@ -72,7 +79,7 @@ class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superC
                 track.globalFXs.asList().forEach { globalFx ->
                     val args = globalFx.params.compute(state, currentBeat).flatMap { it.toList() }
                     if (args.isNotEmpty()) {
-                        logger.debug("beat $currentBeat, fx ${globalFx.type.name}, params $args")
+                        logger.debug { "beat $currentBeat, fx ${globalFx.type.name}, params $args" }
                     }
                     val commonArgs = listOf("bpm", metronome.bpm)
                     val ctrlPkt = OSCMessage("/n_set", listOf(globalFx.nodeId) + commonArgs + args)
@@ -82,18 +89,21 @@ class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superC
         }
     }
 
-    private fun playNotes(state: State, at: LocalDateTime, bar: Int) {
+    private fun playNotes(state: State, at: LocalDateTime, bar: Int, startedAt: LocalDateTime) {
         val millisPerBeat = state.trackConfig.millisPerBeat
         state.notes.forEach { note ->
             val playAt = at.plus((note.beat * millisPerBeat).toLong(), ChronoUnit.MILLIS)
             schedule(playAt.minus(150, ChronoUnit.MILLIS)) {
-                player.playNote(bar, note, playAt, state)
+                // check if not stopped or restarted
+                if (playing && startedAt == metronome.startAt) {
+                    player.playNote(bar, note, playAt, state)
+                }
             }
         }
     }
 
     private fun schedule(time: LocalDateTime, function: () -> Unit) {
-        GlobalScope.launch {
+        schedulerScope.launch {
             delay(Duration.between(metronome.currentTime(), time).toMillis())
             function.invoke()
         }

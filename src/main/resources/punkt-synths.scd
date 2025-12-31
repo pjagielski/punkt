@@ -67,10 +67,10 @@ SynthDef(\plucklead, {
 }).add;
 
 SynthDef(\lead, {
-    |bus=0, dur=1, amp=1, freq=440, cutoff=5000, start=6000, sus=0.4, rel=0.8|
+    |bus=0, dur=1, amp=1, freq=440, cutoff=1000, start=2000, sus=0.5, rel=0.5|
     var sound;
-    var voices = 15;
-    var env = Env.adsr(0.1, 0.5, sus, rel);
+    var voices = 13;
+    var env = Env.adsr(0.1, 0.7, sus, rel);
     var envGen = EnvGen.ar(env, Line.kr(1.0, 0.0, dur), doneAction:0);
     var freqs = {Rand(-1,1)*2**(freq/2200)}.dup(voices);
     var phases = Array.fill(voices, { 1.0.rand2 });
@@ -80,15 +80,15 @@ SynthDef(\lead, {
 }).add;
 
 SynthDef(\tb303, {
-    |bus=0, freq=440, wave=1, cutoff=400, res=0.1, start=200, sus=0.75, dec=0.5, dur=1, amp=1|
+    |bus=0, freq=440, wave=1, cutoff=400, res=0.1, start=200, sus=0.25, dec=0.5, dur=1, amp=1, pan=0|
     var sound;
-    var line = Line.ar(1, 0, dur*2, doneAction:0);
-    var volEnv = EnvGen.ar(Env.perc(10e-10, dur), doneAction: 0);
+	var line = Line.ar(1, 0, dur*2, doneAction:0);
+	var volEnv = EnvGen.ar(Env.perc(10e-10, dur), doneAction: 0);
     var filEnv = EnvGen.ar(Env.adsr(10e-10, dec, sus, 0.2), line);
-    var waves = [Saw.ar(freq, volEnv), Pulse.ar(freq, 0.5, volEnv)];
+    var waves = [Saw.ar(freq), Pulse.ar(freq, 0.5)];
 	sound = RLPF.ar(Select.ar(wave, waves), start + (filEnv * cutoff), res);
 	//sound = (sound.clip2(0.1) * 12).distort();
-	ReplaceOut.ar(bus, Pan2.ar(sound) * amp);
+	ReplaceOut.ar(bus, Pan2.ar(sound, pan, amp * volEnv));
 }).add;
 
 SynthDef(\tr808, {
@@ -151,7 +151,7 @@ SynthDef(\bass8, {
 	sig = sig * 0.5;
 	sig = sig.flop.sum;
 	sig = sig * aenvGen;
-	sig = sig * AmpComp.kr(freq);
+	// sig = sig * AmpComp.kr(freq);
 	sig = sig.sum;
 
 	sound = Pan2.ar(sig, pan, amp);
@@ -159,11 +159,11 @@ SynthDef(\bass8, {
 }).add;
 
 SynthDef(\piano,{
-	|bus, dur=1, pan, amp=1, detune=0.1, muffle=1, stereo=0.2, freq=440 |
+	|bus, freq=440, dur=1, pan, amp=1, detune=0.1, muffle=1, stereo=0.2, mul=1  |
 	var env = EnvGen.ar(Env.linen(0.002, 0.996, 0.002, 1,-3), timeScale:dur, doneAction:0);
 	// the +0.01 to freq is because of edge case rounding internal to the MdaPiano synth
 	var sound = MdaPiano.ar(freq+0.01, vel:amp*100, hard:0.8*amp, decay:0.1*dur,
-		tune:0.5, random:0.05, stretch:detune, muffle:0.8*muffle, stereo:stereo);
+		tune:0.5, random:0.05, stretch:detune, muffle:0.8*muffle, stereo:stereo, mul: mul);
 	ReplaceOut.ar(bus, Pan2.ar(sound, pan, env))
 }).add;
 
@@ -334,7 +334,8 @@ SynthDef.new(\globalDelay, {
 SynthDef.new(\globalReverb, {
 	|bus, level=0.0, room = 2, mix = 0.5|
 	var osc = In.ar(bus, 2);
-	osc = osc + (level * FreeVerb.ar(osc, mix, room));
+	var verb = FreeVerb.ar(osc, mix, room);
+	osc = osc + (level * verb);
 	ReplaceOut.ar(bus, osc);
 }).add;
 
