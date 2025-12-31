@@ -21,7 +21,7 @@ Demos:
 * **data-oriented** - patterns and melodies represented as data structure, making it easy to test and visualize
 
 ### How to start
-0. Install [SuperCollider](https://supercollider.github.io/download) (at least 3.10) and [sc3-plugins](https://supercollider.github.io/sc3-plugins/)
+0. Install [SuperCollider](https://supercollider.github.io/download) (at least 3.10), [sc3-plugins](https://supercollider.github.io/sc3-plugins/) and [mi-ugens](https://github.com/v7b1/mi-UGens)
 1. Clone [template project](https://github.com/pjagielski/punkt-template) `git clone https://github.com/pjagielski/punkt-template.git`
 2. Start SuperCollider, boot server (Server->Boot Server) and run [punkt-synths.scd](https://raw.githubusercontent.com/pjagielski/punkt/master/src/main/resources/punkt-synths.scd)
 (in case of "Memory allocation problems": clone [punkt project](https://github.com/pjagielski/punkt) and run `src/main/resources/punkt.scd` in SuperCollider.)
