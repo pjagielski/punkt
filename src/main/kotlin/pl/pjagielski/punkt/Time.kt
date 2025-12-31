@@ -1,8 +1,5 @@
 package pl.pjagielski.punkt
-
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import pl.pjagielski.punkt.config.TrackConfig
 import java.time.Duration
@@ -75,11 +72,14 @@ typealias TickCallback = (TickData) -> Unit
 
 class Ticker(
     val metro: Metronome, val config: TrackConfig,
-    private var running: Boolean = false, var callback: TickCallback? = null
+    private var running: Boolean = false,
+    var callback: TickCallback? = null,
 ) {
 
+    private val schedulerScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     fun after(delayMillis: Long, function: TickCallback) {
-        GlobalScope.launch {
+        schedulerScope.launch {
             delay(delayMillis)
             val data = TickData(metro.currentBar(), metro.currentBeatInBar().toDouble(), config.millisPerBeat)
             function.invoke(data)

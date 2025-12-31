@@ -1,9 +1,7 @@
 package pl.pjagielski.punkt.jam
 
 import com.illposed.osc.OSCMessage
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import pl.pjagielski.punkt.Metronome
 import pl.pjagielski.punkt.config.MidiConfig
@@ -29,7 +27,13 @@ fun midiToHz(note: Int): Float {
     return (440.0 * 2.0.pow((note - 69.0) / 12.0)).toFloat()
 }
 
-class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superCollider: OscServer, val player: Player) {
+class Jam(
+    val stateProvider: StateProvider,
+    val metronome: Metronome,
+    val superCollider: OscServer,
+    val player: Player,
+    private val schedulerScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+) {
 
     private val logger = KotlinLogging.logger {}
 
@@ -99,7 +103,7 @@ class Jam(val stateProvider: StateProvider, val metronome: Metronome, val superC
     }
 
     private fun schedule(time: LocalDateTime, function: () -> Unit) {
-        GlobalScope.launch {
+        schedulerScope.launch {
             delay(Duration.between(metronome.currentTime(), time).toMillis())
             function.invoke()
         }
